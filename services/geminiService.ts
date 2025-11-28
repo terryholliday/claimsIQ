@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Chat, GenerateContentResponse } from '@google/genai';
-import { Asset, AssetStatus, FraudAnalysis, FraudRiskLevel, MarketValueAnalysis, Claim, ImageAnalysis, ReceiptMatch, LKQAnalysis, WeatherAnalysis, DuplicateAnalysis, BundleAnalysis, PolicyCheck, DepreciationAnalysis, CategoryAnalysis, NegotiationScript, SpecialtyAnalysis, SubrogationAnalysis, PaddingAnalysis, StateRegulation, FilingReport, RegulatoryCheck, SettlementReport, LiveFNOLAnalysis, DigitalFieldAdjusterAnalysis, LiveFNOLTranscriptEntry, LiveFNOLIntelligenceCard } from '../types';
+import { Asset, AssetStatus, FraudAnalysis, FraudRiskLevel, MarketValueAnalysis, Claim, ImageAnalysis, ReceiptMatch, LKQAnalysis, WeatherAnalysis, DuplicateAnalysis, BundleAnalysis, PolicyCheck, DepreciationAnalysis, CategoryAnalysis, NegotiationScript, SpecialtyAnalysis, SubrogationAnalysis, PaddingAnalysis, StateRegulation, FilingReport, RegulatoryCheck, SettlementReport, LiveFNOLAnalysis, DigitalFieldAdjusterAnalysis, LiveFNOLTranscriptEntry, LiveFNOLIntelligenceCard, ClaimSummary } from '../types';
 
 // --- API Request Helpers with Error Handling & Retries ---
 
@@ -84,6 +84,67 @@ const cleanJsonOutput = (text: string): string => {
   if (!text) return "{}";
   return text.replace(/^```(?:json)?\s*|\s*```$/gi, '').trim();
 };
+
+// --- NEW "WORKFLOW" FEATURE ---
+export const generateClaimSummary = async (claim: Claim): Promise<ClaimSummary | null> => {
+    const prompt = `
+      You are an expert Senior Claims Adjuster AI for a system called TrueManifest. Your task is to provide an immediate, high-level briefing for a human adjuster opening this claim file for the first time.
+      
+      Analyze the provided claim JSON data. Identify the most critical information and present it as a concise summary.
+      
+      Claim Data:
+      ${JSON.stringify(claim, null, 2)}
+      
+      Based on the data, provide the following in a JSON object:
+      1.  **summary**: A one-sentence summary of the claim (e.g., "Theft claim for high-value electronics from a new policyholder.").
+      2.  **redFlags**: An array of strings highlighting the TOP 3-4 most critical risks or anomalies. Examples:
+          - "Claim value ($12,500) exceeds coverage limit ($10,000)."
+          - "Policy is very new (inception date was 15 days before loss)."
+          - "High-value item ('Diamond Necklace') purchased just 2 days before claim date."
+          - "Multiple items flagged for high fraud risk by other AI scans."
+      3.  **suggestedActions**: An array of objects for the top 2-3 recommended next steps for the adjuster. Each object should have a 'title' (the action) and a 'reasoning'. Examples:
+          - title: "Refer to SIU for Investigation", reasoning: "Timeline anomalies and high-value, recently purchased items warrant a full SIU workup."
+          - title: "Request Proof of Purchase for High-Value Items", reasoning: "Verify ownership and value for all items over $1,000."
+          - title: "Run 'Policy Guardian' Scan", reasoning: "Check for potential exclusions, especially for the 'Vintage Wine Collection'."
+    `;
+
+    try {
+        const response: GenerateContentResponse = await geminiRequestWithRetry(() => ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        summary: { type: Type.STRING },
+                        redFlags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        suggestedActions: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    title: { type: Type.STRING },
+                                    reasoning: { type: Type.STRING }
+                                },
+                                required: ['title', 'reasoning']
+                            }
+                        }
+                    },
+                    required: ['summary', 'redFlags', 'suggestedActions']
+                }
+            }
+        }));
+        
+        const parsedResponse = JSON.parse(cleanJsonOutput(response.text || '{}')) as ClaimSummary;
+        return parsedResponse;
+        
+    } catch (error) {
+        console.error("Error generating claim summary:", error);
+        return null;
+    }
+};
+
 
 // --- NEW "WOW" FEATURE SERVICES (MOCKED FOR DEMO) ---
 

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Claim, Asset, FraudRiskLevel, AssetStatus, ClaimStatus, WeatherAnalysis, DuplicateAnalysis, RegulatoryCheck, SettlementReport, AuditLogEntry, LiveFNOLAnalysis, ClaimActivity, ClaimNote, ClaimDocument, DigitalFieldAdjusterAnalysis } from '../../types';
-import { analyzeAssetForFraud, analyzeMarketValue, analyzeAssetImage, reconcileReceipt, findLKQReplacement, mapEvidenceToAssets, verifyWeather, detectDuplicates, analyzeBundles, checkPolicyExclusions, calculateDepreciation, auditCategories, generateNegotiationScript, identifySpecialtyItems, analyzeSubrogation, analyzeClaimPadding, performRegulatoryCheck, generateSettlementReport, urlToBase64, fileToBase64, runLiveFNOL, analyzeDamagePhoto } from '../../services/geminiService';
+import { analyzeAssetForFraud, analyzeMarketValue, analyzeAssetImage, reconcileReceipt, findLKQReplacement, mapEvidenceToAssets, verifyWeather, detectDuplicates, analyzeBundles, checkPolicyExclusions, calculateDepreciation, auditCategories, generateNegotiationScript, identifySpecialtyItems, analyzeSubrogation, analyzeClaimPadding, performRegulatoryCheck, generateSettlementReport, urlToBase64, fileToBase64, runLiveFNOL, analyzeDamagePhoto, generateClaimSummary } from '../../services/geminiService';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import ManifestAssistant from '../ManifestAssistant';
@@ -299,69 +299,158 @@ const LiveFNOLIntake: React.FC<{ claim: Claim; onUpdateClaim: (updatedClaim: Cla
     );
 };
 
-const InvestigationStartGuide: React.FC<{ health: HealthCheckResult }> = ({ health }) => {
-    const { flags, steps } = health;
+const AIClaimBriefing: React.FC<{
+  claim: Claim;
+  setClaim: React.Dispatch<React.SetStateAction<Claim>>;
+  logAction: (action: string, details: string) => void;
+}> = ({ claim, setClaim, logAction }) => {
+  const [isGenerating, setIsGenerating] = useState(false);
 
+  const handleGenerateBriefing = async () => {
+    setIsGenerating(true);
+    logAction('AI_BRIEFING_REQUEST', 'Requesting AI-generated claim summary.');
+    const summary = await generateClaimSummary(claim);
+    if (summary) {
+      setClaim(prev => ({
+        ...prev,
+        claimSummary: summary,
+      }));
+      logAction('AI_BRIEFING_SUCCESS', 'Successfully generated and applied claim summary.');
+    } else {
+      logAction('AI_BRIEFING_FAILURE', 'Failed to generate claim summary.');
+      alert("There was an error generating the AI briefing. Please try again.");
+    }
+    setIsGenerating(false);
+  };
+
+  const handleAddTask = (action: { title: string; reasoning: string }) => {
+    const newActivity: ClaimActivity = {
+      id: `act-ai-${Date.now()}`,
+      title: action.title,
+      dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 3 days from now
+      assignee: 'Alex Johnson',
+      status: 'Open',
+    };
+    
+    // Also add the reasoning as a note for context
+    const newNote: ClaimNote = {
+        id: `note-ai-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        author: 'TrueManifest AI',
+        content: `Suggested task added from AI Action Plan.\n\nReasoning: "${action.reasoning}"`,
+        type: 'log',
+    };
+
+    setClaim(prev => ({
+      ...prev,
+      activities: [...(prev.activities || []), newActivity],
+      notes: [newNote, ...(prev.notes || [])]
+    }));
+    logAction('AI_TASK_ADDED', `Added suggested task: "${action.title}"`);
+  };
+
+  // If loading
+  if (isGenerating) {
     return (
-        <div className="bg-white border-l-4 border-brand-primary rounded-r-lg shadow-sm flex flex-col md:flex-row overflow-hidden animate-in fade-in slide-in-from-top-2 border-y border-r border-gray-200">
-            <div className="flex-1 p-5">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <ExclamationTriangleIcon className="h-4 w-4 text-brand-secondary" /> 
-                    Automated Red Flags
+      <Card className="text-center py-12">
+        <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+            <SparklesIcon className="absolute inset-0 m-auto h-8 w-8 text-brand-primary" />
+        </div>
+        <h3 className="text-xl font-bold text-neutral-dark">Generating AI Briefing...</h3>
+        <p className="text-gray-500 mt-1">Analyzing claim file and identifying key insights.</p>
+      </Card>
+    );
+  }
+
+  // If summary exists
+  if (claim.claimSummary) {
+    const existingActivityTitles = new Set((claim.activities || []).map(a => a.title));
+    return (
+      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-0 overflow-hidden animate-in fade-in duration-500">
+        <div className="bg-gray-900 text-white p-4 flex justify-between items-center">
+             <div className="flex items-center space-x-3">
+                 <div className="p-1.5 bg-brand-accent/20 rounded-md border border-brand-accent/30">
+                     <SparklesIcon className="h-6 w-6 text-brand-accent" />
+                 </div>
+                 <div>
+                     <h2 className="text-lg font-bold leading-none">AI Claim Briefing</h2>
+                     <p className="text-gray-400 text-xs mt-1">Generated by Gemini just now.</p>
+                 </div>
+             </div>
+        </div>
+        <div className="p-6 space-y-6">
+            <blockquote className="border-l-4 border-brand-primary bg-blue-50 p-4 text-brand-primary-dark font-medium italic">
+                "{claim.claimSummary.summary}"
+            </blockquote>
+            
+            <div>
+                <h3 className="text-sm font-bold text-red-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <ExclamationTriangleIcon className="h-4 w-4" /> Key Red Flags
                 </h3>
-                {flags.length > 0 ? (
-                    <ul className="space-y-2">
-                        {flags.map((flag, i) => (
-                            <li key={i} className={`text-sm p-2 rounded-md border ${
-                                flag.level === 'critical' ? 'bg-red-50 text-red-800 border-red-100' : 
-                                flag.level === 'warning' ? 'bg-orange-50 text-orange-800 border-orange-100' : 
-                                'bg-blue-50 text-blue-800 border-blue-100'
-                            } flex items-start gap-2`}>
-                                {flag.level === 'critical' ? <ShieldExclamationIcon className="h-4 w-4 shrink-0 mt-0.5"/> : 
-                                 flag.level === 'warning' ? <ExclamationTriangleIcon className="h-4 w-4 shrink-0 mt-0.5"/> :
-                                 <InformationCircleIcon className="h-4 w-4 shrink-0 mt-0.5"/>}
-                                {flag.text}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <div className="flex items-center gap-2 text-gray-500 text-sm italic p-2 bg-gray-50 rounded border border-gray-100">
-                        <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                        No critical flags detected.
-                    </div>
-                )}
+                <ul className="space-y-2">
+                    {claim.claimSummary.redFlags.map((flag, i) => (
+                        <li key={i} className="text-sm text-red-900 bg-red-50 border border-red-100 p-2 rounded-md flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 bg-red-400 rounded-full mt-1.5 shrink-0"></div>
+                            {flag}
+                        </li>
+                    ))}
+                </ul>
             </div>
 
-            <div className="w-px bg-gray-200 hidden md:block"></div>
-
-            <div className="flex-1 p-5 bg-gray-50/30">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <PlayIcon className="h-4 w-4 text-green-600" /> 
-                    Recommended Next Steps
+             <div>
+                <h3 className="text-sm font-bold text-green-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <ListBulletIcon className="h-4 w-4" /> AI Action Plan
                 </h3>
-                <div className="space-y-2">
-                    {steps.map((step, i) => (
-                        <div key={step.id} className="flex items-start gap-3 p-2 bg-white hover:bg-gray-50 rounded border border-gray-200 shadow-sm transition-colors cursor-default">
-                            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-neutral-dark text-[10px] font-bold text-white mt-0.5">
-                                {i + 1}
+                <div className="space-y-3">
+                    {claim.claimSummary.suggestedActions.map((action, i) => {
+                        const isAdded = existingActivityTitles.has(action.title);
+                        return (
+                             <div key={i} className="bg-white p-3 rounded-lg border border-gray-200 flex justify-between items-center gap-4 hover:bg-gray-50 transition-colors">
+                                <div>
+                                    <p className="font-bold text-gray-800">{action.title}</p>
+                                    <p className="text-xs text-gray-500 mt-1 italic">AI Reasoning: "{action.reasoning}"</p>
+                                </div>
+                                <button
+                                    onClick={() => handleAddTask(action)}
+                                    disabled={isAdded}
+                                    className={`text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shrink-0 transition-colors ${
+                                        isAdded 
+                                        ? 'bg-green-100 text-green-800 cursor-default'
+                                        : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
+                                    }`}
+                                >
+                                    {isAdded ? <CheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
+                                    {isAdded ? 'Added' : 'Add Task'}
+                                </button>
                             </div>
-                            <div>
-                                <p className="text-sm font-bold text-gray-900">{step.title}</p>
-                                <p className="text-xs text-gray-500">{step.desc}</p>
-                            </div>
-                        </div>
-                    ))}
-                    {steps.length === 0 && (
-                        <div className="flex items-center gap-2 text-gray-500 text-sm italic p-2">
-                            <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                            All baseline checks complete. Ready for review.
-                        </div>
-                    )}
+                        );
+                    })}
                 </div>
             </div>
         </div>
+      </div>
     );
+  }
+
+  // Initial State: Button to generate
+  return (
+    <div className="bg-white border-l-4 border-brand-primary rounded-r-lg shadow-sm flex items-center justify-between p-6 animate-in fade-in slide-in-from-top-2 border-y border-r border-gray-200">
+        <div>
+            <h3 className="text-lg font-bold text-neutral-dark flex items-center gap-2"><SparklesIcon className="h-5 w-5 text-brand-accent"/> AI Claim Briefing</h3>
+            <p className="text-sm text-gray-600 mt-1">Get an instant summary, red flags, and a recommended action plan from Gemini.</p>
+        </div>
+        <button 
+            onClick={handleGenerateBriefing}
+            className="bg-brand-primary hover:bg-brand-secondary text-white font-bold px-6 py-3 rounded-lg shadow-md flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+        >
+            <SparklesIcon className="h-5 w-5" /> Generate Briefing
+        </button>
+    </div>
+  );
 };
+
 
 const AuditLogModal: React.FC<{ claim: Claim; onClose: () => void }> = ({ claim, onClose }) => {
     return (
@@ -743,46 +832,24 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
         const flags: { level: 'critical' | 'warning' | 'info'; text: string }[] = [];
         const steps: { id: string; title: string; desc: string }[] = [];
         const blockers: string[] = [];
-        const policyStart = new Date(claim.policyStartDate);
-        const claimDate = new Date(claim.claimDate);
-        const daysSinceStart = (claimDate.getTime() - policyStart.getTime()) / (1000 * 60 * 60 * 24);
         
-        if (daysSinceStart < 30 && daysSinceStart >= 0) {
-            flags.push({ level: 'critical', text: `Policy is only ${Math.floor(daysSinceStart)} days old (Timeline Risk).` });
-        } else if (daysSinceStart < 90 && daysSinceStart >= 0) {
-            flags.push({ level: 'warning', text: `Policy is new (< 90 days). Review closely.` });
-        }
-        if (claim.totalClaimedValue > claim.coverageLimit) {
-            flags.push({ level: 'critical', text: `Claim exceeds coverage limit by ${formatCurrency(claim.totalClaimedValue - claim.coverageLimit)}.` });
-        }
+        // This logic is now superseded by the AI Claim Briefing, 
+        // but kept for the export validation.
         const flaggedAssets = claim.assets.filter(a => a.status === AssetStatus.FLAGGED);
         if (flaggedAssets.length > 0) {
-            flags.push({ level: 'critical', text: `${flaggedAssets.length} High Risk items detected.` });
             blockers.push(`${flaggedAssets.length} items are flagged as High Risk.`);
         }
-        const recentPurchaseCount = claim.assets.filter(a => {
-            const pDate = new Date(a.purchaseDate);
-            const diff = (claimDate.getTime() - pDate.getTime()) / (1000 * 60 * 60 * 24);
-            return diff < 14 && diff >= 0;
-        }).length;
-        if (recentPurchaseCount > 0) {
-            flags.push({ level: 'warning', text: `${recentPurchaseCount} items purchased within 2 weeks of loss.` });
-        }
+
         const unScannedCount = claim.assets.filter(a => !a.fraudAnalysis).length;
         if (unScannedCount > 0) {
-            steps.push({ id: 'fraud', title: "Scan Fraud", desc: `${unScannedCount} items pending AI analysis.` });
             blockers.push("Fraud analysis incomplete.");
         }
+        
         const unPricedHighValue = claim.assets.filter(a => a.claimedValue > 500 && !a.marketValueAnalysis).length;
         if (unPricedHighValue > 0) {
-            steps.push({ id: 'market', title: "Check Market Value", desc: `Verify pricing on ${unPricedHighValue} high-value items.` });
             blockers.push("Market valuation incomplete for high-value items.");
         }
-        const electronicsOrMisc = claim.assets.some(a => a.category === 'Misc' || a.category === 'Electronics');
-        const hasPolicyCheck = claim.assets.some(a => a.policyCheck);
-        if (electronicsOrMisc && !hasPolicyCheck) {
-            steps.push({ id: 'policy', title: "Run Policy Guardian", desc: "Check for exclusions in electronics/misc." });
-        }
+
         return { flags, steps, blockers, isExportable: blockers.length === 0 };
   }, [claim]);
 
@@ -1644,7 +1711,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
         </div>
       </div>
 
-      <InvestigationStartGuide health={claimHealth} />
+      <AIClaimBriefing claim={claim} setClaim={setClaim} logAction={logAction} />
       
       {/* --- NEW AI INTELLIGENCE HUB --- */}
       <div className="bg-white rounded-xl shadow-md border border-gray-200 p-0 overflow-hidden">

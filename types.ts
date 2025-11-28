@@ -261,6 +261,11 @@ export interface GeneratedLetter {
     date: string;
 }
 
+export interface ClaimSummary {
+  summary: string;
+  redFlags: string[];
+  suggestedActions: { title: string; reasoning: string }[];
+}
 
 export interface Asset {
   id: string;
@@ -307,6 +312,8 @@ export interface Claim {
   assets: Asset[];
   paddingAnalysis?: PaddingAnalysis;
   liveFNOLAnalysis?: LiveFNOLAnalysis; // New
+  claimSummary?: ClaimSummary; // New for AI Briefing
+  suggestedActivities?: ClaimActivity[]; // New for AI Action Plan
   // NEW Guidewire-like features
   activities?: ClaimActivity[];
   notes?: ClaimNote[];
