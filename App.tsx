@@ -61,7 +61,7 @@ const App: React.FC = () => {
   }, [publicScreen, isAuthenticated]);
 
   useEffect(() => {
-    if (mainContentRef.current && activeScreen !== Screen.TRAINING) {
+    if (mainContentRef.current && activeScreen !== Screen.TRAINING && selectedClaim?.liveFNOLAnalysis?.status !== 'active') {
       mainContentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [activeScreen, selectedClaim]);

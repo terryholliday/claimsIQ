@@ -1,4 +1,3 @@
-
 export enum Screen {
   DASHBOARD = 'DASHBOARD',
   CLAIM_DETAIL = 'CLAIM_DETAIL',

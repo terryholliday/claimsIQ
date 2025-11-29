@@ -349,6 +349,45 @@ const AIClaimBriefing: React.FC<{
     logAction('AI_TASK_ADDED', `Added suggested task: "${action.title}"`);
   };
 
+  const handleAddAllTasks = () => {
+    if (!claim.claimSummary?.suggestedActions) return;
+
+    const existingActivityTitles = new Set((claim.activities || []).map(a => a.title));
+    const newActions = claim.claimSummary.suggestedActions.filter(
+      action => !existingActivityTitles.has(action.title)
+    );
+
+    if (newActions.length === 0) return;
+
+    const newActivities: ClaimActivity[] = [];
+    const newNotes: ClaimNote[] = [];
+    
+    newActions.forEach((action, index) => {
+        const timestamp = Date.now() + index; // to avoid duplicate keys if added quickly
+        newActivities.push({
+            id: `act-ai-${timestamp}`,
+            title: action.title,
+            dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            assignee: 'Alex Johnson',
+            status: 'Open',
+        });
+        newNotes.push({
+            id: `note-ai-${timestamp}`,
+            timestamp: new Date().toISOString(),
+            author: 'TrueManifest AI',
+            content: `Suggested task added from AI Action Plan.\n\nReasoning: "${action.reasoning}"`,
+            type: 'log',
+        });
+    });
+
+    setClaim(prev => ({
+        ...prev,
+        activities: [...(prev.activities || []), ...newActivities],
+        notes: [...newNotes, ...(prev.notes || [])]
+    }));
+    logAction('AI_BULK_TASK_ADD', `Added ${newActions.length} suggested tasks.`);
+  };
+
   // If loading
   if (isGenerating) {
     return (
@@ -367,6 +406,8 @@ const AIClaimBriefing: React.FC<{
   // If summary exists
   if (claim.claimSummary) {
     const existingActivityTitles = new Set((claim.activities || []).map(a => a.title));
+    const allTasksAdded = claim.claimSummary.suggestedActions.every(action => existingActivityTitles.has(action.title));
+
     return (
       <div className="bg-white rounded-xl shadow-md border border-gray-200 p-0 overflow-hidden animate-in fade-in duration-500">
         <div className="bg-gray-900 text-white p-4 flex justify-between items-center">
@@ -400,9 +441,20 @@ const AIClaimBriefing: React.FC<{
             </div>
 
              <div>
-                <h3 className="text-sm font-bold text-green-800 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <ListBulletIcon className="h-4 w-4" /> AI Action Plan
-                </h3>
+                <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-sm font-bold text-green-800 uppercase tracking-wider flex items-center gap-2">
+                        <ListBulletIcon className="h-4 w-4" /> AI Action Plan
+                    </h3>
+                    {!allTasksAdded && (
+                        <button
+                            onClick={handleAddAllTasks}
+                            className="text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 bg-green-100 text-green-800 hover:bg-green-200 border border-green-200 transition-colors"
+                        >
+                            <PlusIcon className="h-4 w-4" />
+                            Add All Tasks
+                        </button>
+                    )}
+                </div>
                 <div className="space-y-3">
                     {claim.claimSummary.suggestedActions.map((action, i) => {
                         const isAdded = existingActivityTitles.has(action.title);
@@ -782,6 +834,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
   const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(new Set());
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const startTimeRef = useRef<number>(Date.now());
+  const aiHubRef = useRef<HTMLDivElement>(null);
   
   const [activeTab, setActiveTab] = useState<'manifest' | 'activities' | 'financials' | 'notes' | 'documents' | 'liveFNOL'>('manifest');
 
@@ -1499,6 +1552,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
   };
 
   const handleRunAllScans = async () => {
+    aiHubRef.current?.scrollIntoView({ behavior: 'smooth' });
     setIsRunAllLoading(true);
     setActionResult(null); 
 
@@ -1714,7 +1768,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
       <AIClaimBriefing claim={claim} setClaim={setClaim} logAction={logAction} />
       
       {/* --- NEW AI INTELLIGENCE HUB --- */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-0 overflow-hidden">
+      <div ref={aiHubRef} className="bg-white rounded-xl shadow-md border border-gray-200 p-0 overflow-hidden">
           <div className="bg-gray-900 text-white p-4 flex justify-between items-center">
              <div className="flex items-center space-x-3">
                  <div className="p-1.5 bg-brand-accent/20 rounded-md border border-brand-accent/30">
@@ -2261,7 +2315,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
             {activeTab === 'activities' && <ActivitiesTab claim={claim} setClaim={setClaim} />}
             {activeTab === 'notes' && <NotesTab claim={claim} setClaim={setClaim} />}
             {activeTab === 'financials' && <FinancialsTab claim={claim} settlementReport={settlementReport} />}
-            {activeTab === 'documents' && <DocumentsTab claim={claim} />}
+            {activeTab === 'documents' && <DocumentsTab claim={claim} setClaim={setClaim} />}
         </div>
       </Card>
       
@@ -2486,17 +2540,72 @@ const FinancialsTab: React.FC<{ claim: Claim; settlementReport: SettlementReport
     );
 };
 
-const DocumentsTab: React.FC<{ claim: Claim; }> = ({ claim }) => {
-    const getIcon = (type: 'PDF' | 'Image' | 'Word' | 'Other') => {
+const DocumentsTab: React.FC<{ claim: Claim; setClaim: React.Dispatch<React.SetStateAction<Claim>> }> = ({ claim, setClaim }) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const getIcon = (type: ClaimDocument['type']) => {
         if (type === 'PDF') return <DocumentTextIcon className="h-6 w-6 text-red-500" />;
         if (type === 'Image') return <CameraIcon className="h-6 w-6 text-blue-500" />;
         if (type === 'Word') return <DocumentTextIcon className="h-6 w-6 text-blue-700" />;
         return <PaperClipIcon className="h-6 w-6 text-gray-500" />;
     };
+    
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const getFileType = (fileName: string): ClaimDocument['type'] => {
+            const extension = fileName.split('.').pop()?.toLowerCase() || '';
+            if (extension === 'pdf') return 'PDF';
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) return 'Image';
+            if (['doc', 'docx'].includes(extension)) return 'Word';
+            return 'Other';
+        };
+
+        const formatFileSize = (bytes: number): string => {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+        };
+
+        const newDoc: ClaimDocument = {
+            id: `doc-${Date.now()}`,
+            name: file.name,
+            type: getFileType(file.name),
+            uploadedDate: new Date().toISOString().split('T')[0],
+            size: formatFileSize(file.size),
+        };
+
+        setClaim(prev => ({
+            ...prev,
+            documents: [...(prev.documents || []), newDoc],
+        }));
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
 
     return (
         <div className="space-y-4">
-            <h3 className="text-lg font-bold text-neutral-dark">Claim Documents</h3>
+            <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-neutral-dark">Claim Documents</h3>
+                <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-brand-primary hover:bg-brand-secondary text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"
+                >
+                    <CloudArrowUpIcon className="h-4 w-4" />
+                    Upload Document
+                </button>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleFileUpload}
+                />
+            </div>
             <div className="border border-gray-200 rounded-lg overflow-hidden">
                 {(claim.documents && claim.documents.length > 0) ? (
                     claim.documents.map(doc => (
