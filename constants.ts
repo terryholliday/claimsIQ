@@ -1,5 +1,15 @@
+import { Claim, ClaimStatus, AssetStatus, FraudRiskLevel, PlaybookStep } from './types';
 
-import { Claim, ClaimStatus, AssetStatus, FraudRiskLevel } from './types';
+export const DEFAULT_PLAYBOOK_STEPS: PlaybookStep[] = [
+    { id: 'step-1', label: 'FNOL Verification', description: 'Confirm Date of Loss, Policy limits, and deductible.', required: true, completed: false },
+    { id: 'step-2', label: 'Contact Customer', description: 'Establish initial contact and set expectations.', required: true, completed: false },
+    { id: 'step-3', label: 'MyARK Sync / Inventory', description: 'Ingest list from MyARK or create manually.', required: true, completed: false },
+    { id: 'step-4', label: 'Field Inspection', description: 'Digital or onsite inspection of claimed assets.', required: false, completed: false },
+    { id: 'step-5', label: 'Pricing & Depreciation', description: 'Apply age, condition, and depreciation.', required: true, completed: false },
+    { id: 'step-6', label: 'Coverage Review', description: 'Check limits, exclusions, and sub-limits.', required: true, completed: false },
+    { id: 'step-7', label: 'Settlement Proposal', description: 'Generate settlement report and review with insured.', required: true, completed: false },
+    { id: 'step-8', label: 'Payment & Close', description: 'Issue payment and close file.', required: true, completed: false }
+];
 
 export const MOCK_CLAIMS: Claim[] = [
     {

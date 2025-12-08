@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Chat, GenerateContentResponse } from '@google/genai';
-import { Asset, AssetStatus, FraudAnalysis, FraudRiskLevel, MarketValueAnalysis, Claim, ImageAnalysis, ReceiptMatch, LKQAnalysis, WeatherAnalysis, DuplicateAnalysis, BundleAnalysis, PolicyCheck, DepreciationAnalysis, CategoryAnalysis, NegotiationScript, SpecialtyAnalysis, SubrogationAnalysis, PaddingAnalysis, StateRegulation, FilingReport, RegulatoryCheck, SettlementReport, LiveFNOLAnalysis, DigitalFieldAdjusterAnalysis, LiveFNOLTranscriptEntry, LiveFNOLIntelligenceCard, ClaimSummary, MyArkFastTrackResult } from '../types';
+import { Asset, AssetStatus, FraudAnalysis, FraudRiskLevel, MarketValueAnalysis, Claim, ImageAnalysis, ReceiptMatch, LKQAnalysis, WeatherAnalysis, DuplicateAnalysis, BundleAnalysis, PolicyCheck, DepreciationAnalysis, CategoryAnalysis, NegotiationScript, SpecialtyAnalysis, SubrogationAnalysis, PaddingAnalysis, StateRegulation, FilingReport, RegulatoryCheck, SettlementReport, LiveFNOLAnalysis, DigitalFieldAdjusterAnalysis, LiveFNOLTranscriptEntry, LiveFNOLIntelligenceCard, ClaimSummary, MyArkFastTrackResult, ClaimHealthCheckResult } from '../types';
 
 // --- API Request Helpers with Error Handling & Retries ---
 
@@ -1352,4 +1352,45 @@ export const fileToBase64 = (file: File): Promise<string> => {
         };
         reader.onerror = error => reject(error);
     });
+};
+
+// 21. Claim Health Check (Local Logic)
+export const runClaimHealthCheck = (claim: Claim): ClaimHealthCheckResult => {
+    const criticalMissingFields: string[] = [];
+    const warnings: string[] = [];
+    let score = 100;
+
+    // Critical Checks
+    if (!claim.policyNumber) criticalMissingFields.push('Policy Number is missing');
+    if (!claim.claimDate) criticalMissingFields.push('Date of Loss is missing');
+    if (claim.deductible === undefined) criticalMissingFields.push('Deductible is undefined');
+    if ((claim.assets || []).length === 0) criticalMissingFields.push('No assets listed in claim');
+
+    // Warnings & Score deductions
+    const unverifiedAssets = (claim.assets || []).filter(a => a.status === AssetStatus.UNVERIFIED || a.status === AssetStatus.PENDING);
+    if (unverifiedAssets.length > 0) {
+        warnings.push(`${unverifiedAssets.length} assets are still Unverified/Pending`);
+        score -= (unverifiedAssets.length * 5);
+    }
+
+    const missingPhotos = (claim.assets || []).filter(a => !a.imageUrl);
+    if (missingPhotos.length > 0) {
+        warnings.push(`${missingPhotos.length} assets are missing photos`);
+        score -= (missingPhotos.length * 2);
+    }
+
+    const highValueNoReceipt = (claim.assets || []).filter(a => a.claimedValue > 1000 && !a.receiptMatch);
+    if (highValueNoReceipt.length > 0) {
+        warnings.push(`${highValueNoReceipt.length} high-value items (> $1k) missing receipts`);
+        score -= 10;
+    }
+
+    if (score < 0) score = 0;
+
+    return {
+        score,
+        criticalMissingFields,
+        warnings,
+        readyForExport: criticalMissingFields.length === 0 && score > 70
+    };
 };

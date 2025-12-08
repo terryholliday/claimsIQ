@@ -30,3 +30,43 @@ export const createMockAsset = (overrides?: Partial<any>) => ({
     origin: 'POST_LOSS',
     ...overrides
 });
+
+// --- New Domain Mocks ---
+import { Vault, SalvageItem, AuctionLot, EntityType, CurrencyCode } from './contracts/domain';
+
+export const createMockVault = (overrides?: Partial<Vault>): Vault => ({
+    id: 'vault-1',
+    urn: 'urn:trueark:myark:vault:vault-1',
+    ownerId: 'user-1',
+    name: 'Main Vault',
+    assetIds: [],
+    estimatedTotalValue: { amount: 0, currency: CurrencyCode.USD },
+    createdAt: new Date().toISOString(),
+    ...overrides
+});
+
+export const createMockSalvageItem = (overrides?: Partial<SalvageItem>): SalvageItem => ({
+    id: 'salvage-1',
+    urn: 'urn:trueark:arkive:salvage:salvage-1',
+    claimItemId: 'claim-item-1',
+    originalAssetId: 'asset-1',
+    description: 'Damaged 4K TV',
+    condition: 'Damaged screen, power functional',
+    location: 'Warehouse A',
+    estimatedRecoveryValue: { amount: 50, currency: CurrencyCode.USD },
+    ...overrides
+});
+
+export const createMockAuctionLot = (overrides?: Partial<AuctionLot>): AuctionLot => ({
+    id: 'lot-1',
+    urn: 'urn:trueark:arkive:lot:lot-1',
+    sellerId: 'carrier-1',
+    salvageItemIds: ['salvage-1'],
+    title: 'Lot of Electronics',
+    description: 'Various damaged electronics',
+    startPrice: { amount: 10, currency: CurrencyCode.USD },
+    startTime: new Date().toISOString(),
+    endTime: new Date(Date.now() + 86400000).toISOString(), // +1 day
+    status: 'DRAFT',
+    ...overrides
+});

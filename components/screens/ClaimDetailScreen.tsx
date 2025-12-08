@@ -1,12 +1,14 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { Claim, Asset, FraudRiskLevel, AssetStatus, ClaimStatus, WeatherAnalysis, DuplicateAnalysis, RegulatoryCheck, SettlementReport, AuditLogEntry, LiveFNOLAnalysis, ClaimActivity, ClaimNote, ClaimDocument, DigitalFieldAdjusterAnalysis } from '../../types';
-import { analyzeAssetForFraud, analyzeMarketValue, analyzeAssetImage, reconcileReceipt, findLKQReplacement, mapEvidenceToAssets, verifyWeather, detectDuplicates, analyzeBundles, checkPolicyExclusions, calculateDepreciation, auditCategories, generateNegotiationScript, identifySpecialtyItems, analyzeSubrogation, analyzeClaimPadding, performRegulatoryCheck, generateSettlementReport, urlToBase64, fileToBase64, runLiveFNOL, analyzeDamagePhoto, generateClaimSummary, runMyArkFastTrackCheck } from '../../services/geminiService';
+import { Claim, Asset, FraudRiskLevel, AssetStatus, ClaimStatus, WeatherAnalysis, DuplicateAnalysis, RegulatoryCheck, SettlementReport, AuditLogEntry, LiveFNOLAnalysis, ClaimActivity, ClaimNote, ClaimDocument, DigitalFieldAdjusterAnalysis, ClaimHealthCheckResult, PlaybookStep } from '../../types';
+import { analyzeAssetForFraud, analyzeMarketValue, analyzeAssetImage, reconcileReceipt, findLKQReplacement, mapEvidenceToAssets, verifyWeather, detectDuplicates, analyzeBundles, checkPolicyExclusions, calculateDepreciation, auditCategories, generateNegotiationScript, identifySpecialtyItems, analyzeSubrogation, analyzeClaimPadding, performRegulatoryCheck, generateSettlementReport, urlToBase64, fileToBase64, runLiveFNOL, analyzeDamagePhoto, generateClaimSummary, runMyArkFastTrackCheck, runClaimHealthCheck } from '../../services/geminiService';
+import { DEFAULT_PLAYBOOK_STEPS } from '../../constants';
+
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import ManifestAssistant from '../ManifestAssistant';
 import { ArkiveManifest } from '../../types';
 import { generateArkiveManifest } from '../../utils/arkiveManifest';
-import { UserIcon, DocumentTextIcon, CalendarIcon, CurrencyDollarIcon, SparklesIcon, TagIcon, CloudArrowUpIcon, CheckCircleIcon, ExclamationTriangleIcon, ChatBubbleLeftRightIcon, CameraIcon, ReceiptPercentIcon, PaperClipIcon, InformationCircleIcon, ArrowRightIcon, ScaleIcon, ArrowTrendingDownIcon, DocumentMagnifyingGlassIcon, FlagIcon, PaperAirplaneIcon, CloudIcon, DocumentDuplicateIcon, CpuChipIcon, PlayIcon, CubeTransparentIcon, ShieldExclamationIcon, CalculatorIcon, FolderIcon, MegaphoneIcon, StarIcon, XMarkIcon, CheckBadgeIcon, QuestionMarkCircleIcon, BanknotesIcon, QueueListIcon, ShieldCheckIcon, ArrowPathIcon, BuildingLibraryIcon, QrCodeIcon, MapPinIcon, TableCellsIcon, PrinterIcon, ClockIcon, FingerPrintIcon, LockClosedIcon, MicrophoneIcon, VideoCameraIcon, BoltIcon, XCircleIcon, ListBulletIcon, PlusIcon, CheckIcon, PencilSquareIcon, ChatBubbleBottomCenterTextIcon, ShoppingBagIcon, TruckIcon } from '../icons/Icons';
+import { UserIcon, DocumentTextIcon, CalendarIcon, CurrencyDollarIcon, SparklesIcon, TagIcon, CloudArrowUpIcon, CheckCircleIcon, ExclamationTriangleIcon, ChatBubbleLeftRightIcon, CameraIcon, ReceiptPercentIcon, PaperClipIcon, InformationCircleIcon, ArrowRightIcon, ScaleIcon, ArrowTrendingDownIcon, DocumentMagnifyingGlassIcon, FlagIcon, PaperAirplaneIcon, CloudIcon, DocumentDuplicateIcon, CpuChipIcon, PlayIcon, CubeTransparentIcon, ShieldExclamationIcon, CalculatorIcon, FolderIcon, MegaphoneIcon, StarIcon, XMarkIcon, CheckBadgeIcon, QuestionMarkCircleIcon, BanknotesIcon, QueueListIcon, ShieldCheckIcon, ArrowPathIcon, BuildingLibraryIcon, QrCodeIcon, MapPinIcon, TableCellsIcon, PrinterIcon, ClockIcon, FingerPrintIcon, LockClosedIcon, MicrophoneIcon, VideoCameraIcon, BoltIcon, XCircleIcon, ListBulletIcon, PlusIcon, CheckIcon, PencilSquareIcon, ChatBubbleBottomCenterTextIcon, ShoppingBagIcon, TruckIcon, MobilePhoneIcon } from '../icons/Icons';
 
 interface ClaimDetailScreenProps {
     claim: Claim;
@@ -869,6 +871,49 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
     const [isGeneratingSettlement, setIsGeneratingSettlement] = useState(false);
     const [isRunAllLoading, setIsRunAllLoading] = useState(false);
     const [isCheckingFastTrack, setIsCheckingFastTrack] = useState(false);
+
+    // Playbook & Health Check State
+    const [currentStep, setCurrentStep] = useState<string>(claim.currentPlaybookStepId || 'step-1');
+    const [playbookSteps, setPlaybookSteps] = useState<PlaybookStep[]>(DEFAULT_PLAYBOOK_STEPS);
+    const [healthCheckResult, setHealthCheckResult] = useState<ClaimHealthCheckResult | null>(null);
+
+    // Sync current step from prop if it changes
+    useEffect(() => {
+        if (claim.currentPlaybookStepId) {
+            setCurrentStep(claim.currentPlaybookStepId);
+        }
+    }, [claim.currentPlaybookStepId]);
+
+    const handleStepClick = (stepId: string) => {
+        setCurrentStep(stepId);
+        onUpdateClaim({ ...claim, currentPlaybookStepId: stepId });
+        // Update local completed status (simple logic: all steps before current are done)
+        setPlaybookSteps(prev => prev.map(step => {
+            const steps = DEFAULT_PLAYBOOK_STEPS; // use constant for order
+            const currentIdx = steps.findIndex(s => s.id === stepId);
+            const stepIdx = steps.findIndex(s => s.id === step.id);
+            return { ...step, completed: stepIdx < currentIdx };
+        }));
+    };
+
+    const runHealthCheck = useCallback(() => {
+        const result = runClaimHealthCheck(claim);
+        setHealthCheckResult(result);
+        if (result.readyForExport) {
+            setActionResult({
+                title: "Ready for Export",
+                summary: "This claim passed all health checks.",
+                type: 'success'
+            });
+        } else {
+            setActionResult({
+                title: "Health Check Issues",
+                summary: `Found ${result.criticalMissingFields.length} critical errors and ${result.warnings.length} warnings.`,
+                details: [...result.criticalMissingFields, ...result.warnings],
+                type: 'warning'
+            });
+        }
+    }, [claim]);
 
     const handleRunFastTrack = async () => {
         setIsCheckingFastTrack(true);
@@ -1778,6 +1823,63 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 </div>
             </div>
 
+            {/* Playbook Stepper */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                        <ListBulletIcon className="h-5 w-5 text-brand-primary" />
+                        Claim Playbook
+                    </h3>
+                    <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        Step {playbookSteps.findIndex(s => s.id === currentStep) + 1} of {playbookSteps.length}
+                    </span>
+                </div>
+                <div className="relative pb-2">
+                    <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
+                    <div className="relative z-10 flex justify-between px-2">
+                        {playbookSteps.map((step, idx) => {
+                            const isCurrent = step.id === currentStep;
+                            const isCompleted = step.completed;
+                            const isFuture = !isCurrent && !isCompleted;
+
+                            return (
+                                <button
+                                    key={step.id}
+                                    onClick={() => handleStepClick(step.id)}
+                                    className={`flex flex-col items-center gap-2 group relative focus:outline-none`}
+                                    title={step.description}
+                                >
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition-all duration-300 z-20 ${isCurrent ? 'bg-brand-primary border-brand-primary text-white scale-125 shadow-lg ring-4 ring-blue-50' : isCompleted ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-400'}`}>
+                                        {isCompleted ? <CheckIcon className="h-5 w-5" /> : idx + 1}
+                                    </div>
+                                    <span className={`absolute top-10 text-[10px] font-bold uppercase tracking-wider w-24 text-center transition-colors duration-200 ${isCurrent ? 'text-brand-primary opacity-100' : 'text-gray-400 opacity-0 group-hover:opacity-100'}`}>
+                                        {step.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+                <div className="mt-8 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h4 className="font-bold text-sm text-neutral-dark">{playbookSteps.find(s => s.id === currentStep)?.label}</h4>
+                        <p className="text-xs text-gray-500">{playbookSteps.find(s => s.id === currentStep)?.description}</p>
+                    </div>
+                    <button
+                        onClick={() => {
+                            const idx = playbookSteps.findIndex(s => s.id === currentStep);
+                            if (idx < playbookSteps.length - 1) {
+                                handleStepClick(playbookSteps[idx + 1].id);
+                            }
+                        }}
+                        disabled={playbookSteps.findIndex(s => s.id === currentStep) === playbookSteps.length - 1}
+                        className="text-xs font-bold text-brand-primary hover:text-brand-secondary flex items-center gap-1 disabled:opacity-50"
+                    >
+                        Next Step <ArrowRightIcon className="h-3 w-3" />
+                    </button>
+                </div>
+            </div>
+
             {claim.status === ClaimStatus.NEW_FROM_MYARK && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm mb-6 animate-in slide-in-from-top-4">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1943,6 +2045,56 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                             <p className="text-xs text-gray-400 mt-1">Run on-demand scans below to analyze the manifest.</p>
                         </div>
                     )}
+
+                    {/* CLAIM HEALTH CHECK */}
+                    <div className="mt-6 border-t border-gray-200 pt-6 animate-in slide-in-from-top-2">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-full shadow-sm ${healthCheckResult?.score === 100 ? 'bg-green-100' : 'bg-white'}`}>
+                                    <ScaleIcon className="h-6 w-6 text-gray-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-neutral-dark text-lg flex items-center gap-2">
+                                        Claim Health Check
+                                        {healthCheckResult && (
+                                            <Badge color={healthCheckResult.score > 80 ? 'green' : 'red'}>
+                                                Score: {healthCheckResult.score}/100
+                                            </Badge>
+                                        )}
+                                    </h4>
+                                    <p className="text-gray-500 text-sm">Validate claim completeness before export.</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={runHealthCheck}
+                                className="bg-neutral-dark hover:bg-black text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md flex items-center gap-2 transition-all"
+                            >
+                                <ShieldCheckIcon className="h-4 w-4" />
+                                Run Health Check
+                            </button>
+                        </div>
+
+                        {/* Render Health Details if result exists */}
+                        {healthCheckResult && healthCheckResult.score < 100 && (
+                            <div className="mt-4 grid grid-cols-1 gap-2 bg-red-50 border border-red-100 rounded-lg p-4">
+                                {healthCheckResult.criticalMissingFields.map((field, i) => (
+                                    <div key={`crit-${i}`} className="flex items-center gap-2 text-red-700 font-medium text-sm">
+                                        <XCircleIcon className="h-4 w-4 shrink-0" /> <span className="font-bold">CRITICAL:</span> {field}
+                                    </div>
+                                ))}
+                                {healthCheckResult.warnings.map((warn, i) => (
+                                    <div key={`warn-${i}`} className="flex items-center gap-2 text-orange-700 text-sm">
+                                        <ExclamationTriangleIcon className="h-4 w-4 shrink-0" /> {warn}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {healthCheckResult && healthCheckResult.score === 100 && (
+                            <div className="mt-4 bg-green-50 border border-green-100 rounded-lg p-4 flex items-center gap-2 text-green-700 font-medium text-sm">
+                                <CheckBadgeIcon className="h-5 w-5" /> Claim is healthy and ready for export!
+                            </div>
+                        )}
+                    </div>
 
                     {/* ARKIVE AUCTION SUMMARY */}
                     {claim.assets.some(a => a.salvageDisposition === 'Sold') && (

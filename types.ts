@@ -282,6 +282,21 @@ export interface ClaimSummary {
   suggestedActions: { title: string; reasoning: string }[];
 }
 
+export interface PlaybookStep {
+  id: string;
+  label: string;
+  description: string;
+  required: boolean;
+  completed: boolean;
+}
+
+export interface ClaimHealthCheckResult {
+  score: number; // 0-100
+  criticalMissingFields: string[];
+  warnings: string[];
+  readyForExport: boolean;
+}
+
 export interface ArkiveManifest {
   id: string;
   createdDate: string;
@@ -349,6 +364,7 @@ export interface Claim {
   financials?: Financials;
   preLossMetadata?: MyArkPreLossMetadata; // New for MyARK Intake
   myArkFastTrackResult?: MyArkFastTrackResult; // New for MyARK Fast-Track
+  currentPlaybookStepId?: string;
   payments?: ClaimPayment[];
   generatedLetters?: GeneratedLetter[];
 }
