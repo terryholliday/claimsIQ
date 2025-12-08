@@ -1,0 +1,299 @@
+{
+    "app": "ARKIVE Auctions",
+    "app_key": "arkive",
+    "description": "Recovery marketplace for auctioning documented items and loss assets sourced from MyARK and claims flows.",
+    "phase": 1,
+    "phase_focus": "MVP auction listing, bidding, and settlement flows",
+    "agents": {
+        "lead_engineer": {
+            "agent_name": "Lead Architect",
+            "tasks": [
+                {
+                    "title": "Define Core Auction Architecture",
+                    "description": "Translate ARKIVE Auctions Phase 1 goals (MVP auction listing, bidding, and settlement flows) into a core architecture for listings, bidding, and settlements, ensuring seamless linkage to MyARK Golden Records.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Map Data Flows from MyARK and TrueManifest",
+                    "description": "Define how item data, claim outcomes, and Golden Records from MyARK and TrueManifest flow into ARKIVE Auctions, including status updates back to those systems.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Establish Service and Boundary Design",
+                    "description": "Design services and boundaries for auctions, payments, fraud review, and notification systems within ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Review Auction Platform Technical Plans",
+                    "description": "Review implementation plans with Backend, Frontend, and Data teams to ensure ARKIVE Auctions is scalable, observable, and safe to operate in Phase 1.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        },
+        "backend_engineer": {
+            "agent_name": "Backend/DevOps Engineer",
+            "tasks": [
+                {
+                    "title": "Implement Auction Listing & Bidding APIs",
+                    "description": "Build backend services for ARKIVE Auctions to create listings, place bids, and manage auction states for Phase 1.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Model Auction & Settlement Data",
+                    "description": "Design data models for auctions, bid histories, winners, and settlements that support MVP auction listing, bidding, and settlement flows for ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Integrate with Payment and Payout Systems",
+                    "description": "Integrate ARKIVE Auctions with payment providers and payout workflows for sellers and insurers, ensuring idempotent operations.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Add Logging & Metrics for Auction Flows",
+                    "description": "Instrument key auction flows with logs and metrics to support debugging, optimization, and ARKintel analytics.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        },
+        "frontend_specialist": {
+            "agent_name": "Frontend Specialist",
+            "tasks": [
+                {
+                    "title": "Build Auction Browsing & Detail Views",
+                    "description": "Implement core ARKIVE Auctions UI for browsing auctions, viewing listing details, and understanding item provenance from MyARK and TrueLedger.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Design Bidding & Watchlist Experiences",
+                    "description": "Create intuitive bidding, watchlist, and notification experiences that reduce friction and errors for bidders in ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Expose Provenance and Claim Status",
+                    "description": "Surface claim status, provenance badges, and risk signals from TrueLedger and TrueManifest in ARKIVE Auctions interfaces.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Optimize Performance for Listing Grids",
+                    "description": "Ensure auction lists and search results in ARKIVE Auctions are performant and handle large inventories gracefully in Phase 1.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        },
+        "mobile_architect": {
+            "agent_name": "Mobile Experience Architect",
+            "tasks": [
+                {
+                    "title": "Design Mobile Auction UX",
+                    "description": "Define mobile-first experiences in ARKIVE Auctions for browsing auctions, bidding, and receiving real-time notifications.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Implement Push & In-App Alerts",
+                    "description": "Implement robust push and in-app notification flows for outbid events, auctions ending soon, and settlement updates in ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Ensure Mobile Identity & Session Integrity",
+                    "description": "Align mobile authentication, session handling, and deep links between ARKIVE Auctions, MyARK, and TrueManifest for Phase 1.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Test Mobile Auction Flows Under Network Constraints",
+                    "description": "Test mobile bidding and checkout flows for ARKIVE Auctions under low-bandwidth and intermittent connectivity conditions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        },
+        "data_scientist": {
+            "agent_name": "Data Scientist & Analytics Lead",
+            "tasks": [
+                {
+                    "title": "Define Auction Analytics Events",
+                    "description": "Define the key auction events ARKIVE Auctions should emit (bid placed, reserve met, no-sale, fraud flag) for ARKintel in Phase 1.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Support Pricing and Reserve Strategy Insights",
+                    "description": "Prototype basic price guidance and reserve recommendation metrics based on historical ARKIVE Auctions data aligned with MVP auction listing, bidding, and settlement flows.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Set Up Auction Performance Dashboards",
+                    "description": "Create internal dashboards for auction conversion, clearance rate, and time-to-sale for ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Document Auction Data Contracts",
+                    "description": "Document the auction and settlement data schema and quality expectations for ARKintel and partners consuming ARKIVE Auctions data.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        },
+        "growth_engineer": {
+            "agent_name": "Growth Engineer",
+            "tasks": [
+                {
+                    "title": "Instrument Auction Funnel",
+                    "description": "Instrument ARKIVE Auctions for visitor-to-bidder and bidder-to-buyer funnels, tracking drop-offs by segment for Phase 1.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Run High-Impact Auction Experiments",
+                    "description": "Design and run experiments around recommended items, urgency cues, and buyer trust signals in ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Collaborate on Recovery & Conversion Levers",
+                    "description": "Work with Product and Data Science to find levers that increase recovery rates and average order values in ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Build Internal Growth Tools for Auctions",
+                    "description": "Create feature flags and simple tooling to test variations of auction flows and landing pages for ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        },
+        "qa_specialist": {
+            "agent_name": "QA Specialist",
+            "tasks": [
+                {
+                    "title": "Author Auction Test Plans",
+                    "description": "Create comprehensive test plans for ARKIVE Auctions auctions, including bid edge cases, tie-breaking, and settlement logic.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Maintain Regression Coverage",
+                    "description": "Maintain regression suites covering listing creation, bidding, payments, and MyARK/TrueManifest data ingestion into ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Verify Provenance & Claim Data Display",
+                    "description": "Validate that provenance, Golden Records, and claim statuses are correctly displayed across ARKIVE Auctions surfaces.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Validate Fraud & Abuse Handling",
+                    "description": "Test ARKIVE Auctions responses to suspicious bidding patterns, blocked accounts, and disputed auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        },
+        "compliance_officer": {
+            "agent_name": "Compliance Officer",
+            "tasks": [
+                {
+                    "title": "Review Auction Terms & Flows",
+                    "description": "Review Phase 1 ARKIVE Auctions features and flows for legal compliance around auctions, consumer protection, and disclosures.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Define KYC/AML & Sanctions Policies",
+                    "description": "Define when and how KYC/AML checks and sanctions screening apply to buyers and sellers in ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Align Data Sharing With Policies",
+                    "description": "Ensure ARKIVE Auctions data sharing with insurers, recovery vendors, and ARKintel adheres to privacy and regulatory constraints.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Support Dispute & Chargeback Procedures",
+                    "description": "Collaborate with legal and operations to define compliant dispute and chargeback policies for ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        },
+        "strategic_partnerships_manager": {
+            "agent_name": "Strategic Partnerships Manager",
+            "tasks": [
+                {
+                    "title": "Identify Recovery & Vendor Partners",
+                    "description": "Identify restoration vendors, salvage buyers, and marketplaces that align with ARKIVE Auctions Phase 1 focus: MVP auction listing, bidding, and settlement flows.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Shape Auction-Based Recovery Programs",
+                    "description": "Work with insurers and carriers to design auction-based recovery programs run through ARKIVE Auctions.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Collect Partner Feedback on Auctions",
+                    "description": "Collect structured feedback from early partners using ARKIVE Auctions and feed it back to Product and Engineering.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Support Marketplace Agreement Terms",
+                    "description": "Collaborate with legal and compliance on partner agreements specifically covering ARKIVE Auctions auctions and recovery outcomes.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        },
+        "ai_safety_specialist": {
+            "agent_name": "AI Safety Specialist",
+            "tasks": [
+                {
+                    "title": "Assess Auction AI Use Cases",
+                    "description": "Assess where ARKIVE Auctions uses or will use AI/ML (e.g., price guidance, fraud detection, recommendations) and document risks and misuse scenarios.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Design Guardrails for Pricing & Recommendations",
+                    "description": "Define guardrails to prevent AI-driven pricing and recommendation systems in ARKIVE Auctions from unfair or harmful outcomes.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Coordinate With Fraud & Risk Models",
+                    "description": "Coordinate with Data Science and Security on fraud models trained from ARKIVE Auctions auction data and validation of their behavior.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                },
+                {
+                    "title": "Define Monitoring for AI Auction Systems",
+                    "description": "Set up high-level monitoring expectations for AI components connected to ARKIVE Auctions auctions in Phase 1.",
+                    "security_level": "L0_INTERNAL",
+                    "data_source": "product_specs"
+                }
+            ]
+        }
+    }
+}
