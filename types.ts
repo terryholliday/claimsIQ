@@ -158,106 +158,122 @@ export interface FilingReport {
 }
 
 export interface RegulatoryCheck {
-    state: string;
-    status: 'Compliant' | 'At Risk' | 'Non-Compliant';
-    message: string;
-    deadline?: string;
+  state: string;
+  status: 'Compliant' | 'At Risk' | 'Non-Compliant';
+  message: string;
+  deadline?: string;
 }
 
 export interface ExifData {
-    dateTaken: string;
-    gpsLocation?: string;
-    deviceModel?: string;
-    isMetadataConsistent: boolean;
+  dateTaken: string;
+  gpsLocation?: string;
+  deviceModel?: string;
+  isMetadataConsistent: boolean;
 }
 
 export interface AuditLogEntry {
-    id: string;
-    timestamp: string;
-    user: string;
-    action: string;
-    details: string;
-    hash?: string; // Mock cryptographic hash for "Immutability"
+  id: string;
+  timestamp: string;
+  user: string;
+  action: string;
+  details: string;
+  hash?: string; // Mock cryptographic hash for "Immutability"
 }
 
 // --- NEW TYPES FOR WOW FEATURES ---
 
 export interface LiveFNOLTranscriptEntry {
-    speaker: 'AI' | 'Policyholder' | 'Adjuster';
-    text: string;
+  speaker: 'AI' | 'Policyholder' | 'Adjuster';
+  text: string;
 }
 
 export interface LiveFNOLIntelligenceCard {
-    type: 'alert' | 'info' | 'action';
-    text: string;
+  type: 'alert' | 'info' | 'action';
+  text: string;
 }
 
 export interface LiveFNOLAnalysis {
-    status: 'idle' | 'active' | 'complete';
-    transcript: LiveFNOLTranscriptEntry[];
-    summary?: string;
-    extractedEntities?: { type: string; value: string }[];
-    intelligenceCards?: LiveFNOLIntelligenceCard[];
+  status: 'idle' | 'active' | 'complete';
+  transcript: LiveFNOLTranscriptEntry[];
+  summary?: string;
+  extractedEntities?: { type: string; value: string }[];
+  intelligenceCards?: LiveFNOLIntelligenceCard[];
 }
 
 export interface DigitalFieldAdjusterAnalysis {
-    objectIdentified: string;
-    damageType: string;
-    severityScore: number; // Out of 10
-    repairabilityIndex: number; // Out of 100
-    recommendation: 'Repair' | 'Replace';
-    costEstimate: { min: number; max: number };
-    reasoning: string;
-    suggestedActionPlan: { item: string; cost: number }[];
+  objectIdentified: string;
+  damageType: string;
+  severityScore: number; // Out of 10
+  repairabilityIndex: number; // Out of 100
+  recommendation: 'Repair' | 'Replace';
+  costEstimate: { min: number; max: number };
+  reasoning: string;
+  suggestedActionPlan: { item: string; cost: number }[];
 }
 
 // --- NEW TYPES FOR CORE SYSTEM FEATURES ---
 
+export interface MyArkPreLossMetadata {
+  preLossItemCount: number;
+  preLossTotalValue: number;
+  documentedPhotosCount: number;
+  vaultId: string;
+  lastUpdated: string;
+}
+
+export interface MyArkFastTrackResult {
+  riskScore: number; // 0-100
+  verdict: 'low-risk' | 'medium-risk' | 'high-risk';
+  summary: string;
+  discrepancies: { item: string; issue: string; severity: 'low' | 'high' }[];
+  recommendations: string[];
+}
+
 export interface ClaimActivity {
-    id: string;
-    title: string;
-    dueDate: string;
-    assignee: string;
-    status: 'Open' | 'Completed';
+  id: string;
+  title: string;
+  dueDate: string;
+  assignee: string;
+  status: 'Open' | 'Completed';
 }
 
 export interface ClaimNote {
-    id:string;
-    timestamp: string;
-    author: string;
-    content: string;
-    type: 'log' | 'email' | 'sms';
+  id: string;
+  timestamp: string;
+  author: string;
+  content: string;
+  type: 'log' | 'email' | 'sms';
 }
 
 export interface ClaimDocument {
-    id: string;
-    name: string;
-    type: 'PDF' | 'Image' | 'Word' | 'Other';
-    uploadedDate: string;
-    size: string;
+  id: string;
+  name: string;
+  type: 'PDF' | 'Image' | 'Word' | 'Other';
+  uploadedDate: string;
+  size: string;
 }
 
 export interface Financials {
-    reserves: number;
-    paymentsMade: number;
-    totalIncurred: number;
+  reserves: number;
+  paymentsMade: number;
+  totalIncurred: number;
 }
 
 export interface ClaimPayment {
-    id: string;
-    amount: number;
-    payee: string;
-    method: 'ACH' | 'Virtual Card' | 'Check';
-    date: string;
-    status: 'Sent' | 'Processing' | 'Cleared';
+  id: string;
+  amount: number;
+  payee: string;
+  method: 'ACH' | 'Virtual Card' | 'Check';
+  date: string;
+  status: 'Sent' | 'Processing' | 'Cleared';
 }
 
 export interface GeneratedLetter {
-    id: string;
-    assetId: string;
-    type: 'Denial' | 'ROR';
-    content: string;
-    date: string;
+  id: string;
+  assetId: string;
+  type: 'Denial' | 'ROR';
+  content: string;
+  date: string;
 }
 
 export interface ClaimSummary {
@@ -301,9 +317,9 @@ export interface Claim {
   policyNumber: string;
   policyStartDate: string;
   coverageLimit: number;
-  deductible: number; 
+  deductible: number;
   claimDate: string;
-  location: string; 
+  location: string;
   status: ClaimStatus;
   totalClaimedValue: number;
   touchTime: number; // Total time spent in milliseconds (Efficiency Metric)
@@ -318,16 +334,18 @@ export interface Claim {
   notes?: ClaimNote[];
   documents?: ClaimDocument[];
   financials?: Financials;
+  preLossMetadata?: MyArkPreLossMetadata; // New for MyARK Intake
+  myArkFastTrackResult?: MyArkFastTrackResult; // New for MyARK Fast-Track
   payments?: ClaimPayment[];
   generatedLetters?: GeneratedLetter[];
 }
 
 export interface SettlementReport {
-    grossRCV: number;
-    totalDepreciation: number;
-    deductible: number;
-    netPayment: number;
-    summary: string;
+  grossRCV: number;
+  totalDepreciation: number;
+  deductible: number;
+  netPayment: number;
+  summary: string;
 }
 
 export interface ChatMessage {
