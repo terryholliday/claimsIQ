@@ -4,7 +4,9 @@ import { analyzeAssetForFraud, analyzeMarketValue, analyzeAssetImage, reconcileR
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import ManifestAssistant from '../ManifestAssistant';
-import { UserIcon, DocumentTextIcon, CalendarIcon, CurrencyDollarIcon, SparklesIcon, TagIcon, CloudArrowUpIcon, CheckCircleIcon, ExclamationTriangleIcon, ChatBubbleLeftRightIcon, CameraIcon, ReceiptPercentIcon, PaperClipIcon, InformationCircleIcon, ArrowRightIcon, ScaleIcon, ArrowTrendingDownIcon, DocumentMagnifyingGlassIcon, FlagIcon, PaperAirplaneIcon, CloudIcon, DocumentDuplicateIcon, CpuChipIcon, PlayIcon, CubeTransparentIcon, ShieldExclamationIcon, CalculatorIcon, FolderIcon, MegaphoneIcon, StarIcon, XMarkIcon, CheckBadgeIcon, QuestionMarkCircleIcon, BanknotesIcon, QueueListIcon, ShieldCheckIcon, ArrowPathIcon, BuildingLibraryIcon, QrCodeIcon, MapPinIcon, TableCellsIcon, PrinterIcon, ClockIcon, FingerPrintIcon, LockClosedIcon, MicrophoneIcon, VideoCameraIcon, BoltIcon, XCircleIcon, ListBulletIcon, PlusIcon, CheckIcon, PencilSquareIcon, ChatBubbleBottomCenterTextIcon } from '../icons/Icons';
+import { ArkiveManifest } from '../../types';
+import { generateArkiveManifest } from '../../utils/arkiveManifest';
+import { UserIcon, DocumentTextIcon, CalendarIcon, CurrencyDollarIcon, SparklesIcon, TagIcon, CloudArrowUpIcon, CheckCircleIcon, ExclamationTriangleIcon, ChatBubbleLeftRightIcon, CameraIcon, ReceiptPercentIcon, PaperClipIcon, InformationCircleIcon, ArrowRightIcon, ScaleIcon, ArrowTrendingDownIcon, DocumentMagnifyingGlassIcon, FlagIcon, PaperAirplaneIcon, CloudIcon, DocumentDuplicateIcon, CpuChipIcon, PlayIcon, CubeTransparentIcon, ShieldExclamationIcon, CalculatorIcon, FolderIcon, MegaphoneIcon, StarIcon, XMarkIcon, CheckBadgeIcon, QuestionMarkCircleIcon, BanknotesIcon, QueueListIcon, ShieldCheckIcon, ArrowPathIcon, BuildingLibraryIcon, QrCodeIcon, MapPinIcon, TableCellsIcon, PrinterIcon, ClockIcon, FingerPrintIcon, LockClosedIcon, MicrophoneIcon, VideoCameraIcon, BoltIcon, XCircleIcon, ListBulletIcon, PlusIcon, CheckIcon, PencilSquareIcon, ChatBubbleBottomCenterTextIcon, ShoppingBagIcon, TruckIcon } from '../icons/Icons';
 
 interface ClaimDetailScreenProps {
     claim: Claim;
@@ -1941,6 +1943,60 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                             <p className="text-xs text-gray-400 mt-1">Run on-demand scans below to analyze the manifest.</p>
                         </div>
                     )}
+
+                    {/* ARKIVE AUCTION SUMMARY */}
+                    {claim.assets.some(a => a.salvageDisposition === 'Sold') && (
+                        <div className="mt-6 border-t border-gray-200 pt-6 animate-in slide-in-from-top-2">
+                            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-white rounded-full shadow-sm">
+                                        <TruckIcon className="h-6 w-6 text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-emerald-900 text-lg flex items-center gap-2">
+                                            Arkive Auction Manifest
+                                            <Badge color="green">Ready</Badge>
+                                        </h4>
+                                        <p className="text-emerald-700 text-sm">
+                                            {claim.assets.filter(a => a.salvageDisposition === 'Sold').length} assets marked for salvage resale.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="text-right hidden md:block">
+                                        <p className="text-xs font-bold uppercase text-emerald-600">Est. Recovery</p>
+                                        <p className="text-xl font-bold text-emerald-800">
+                                            {formatCurrency(claim.assets.filter(a => a.salvageDisposition === 'Sold').reduce((sum, a) => sum + (a.salvageEstimatedRecovery || 0), 0))}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            const manifest = generateArkiveManifest(claim);
+                                            if (manifest) {
+                                                console.log("Generating Manifest", manifest);
+                                                logAction('GENERATE_ARKIVE_MANIFEST', `Created Manifest ${manifest.id} with ${manifest.assets.length} items`);
+                                                setActionResult({
+                                                    title: "Arkive Manifest Generated",
+                                                    summary: `Successfully created Auction Manifest ${manifest.id}.`,
+                                                    details: [
+                                                        `Total Items: ${manifest.assets.length}`,
+                                                        `Est. Recovery: ${formatCurrency(manifest.totalEstimatedRecovery)}`,
+                                                        `Pickup Location: ${manifest.pickupLocation}`,
+                                                        `Status: ${manifest.status}`
+                                                    ],
+                                                    type: 'success'
+                                                });
+                                            }
+                                        }}
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md flex items-center gap-2 transition-all"
+                                    >
+                                        <ShoppingBagIcon className="h-4 w-4" />
+                                        Generate Manifest
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200">
@@ -2346,10 +2402,41 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                                                             {asset.digitalFieldAdjusterAnalysis && (
                                                                 <div className="mt-2 text-xs p-2 rounded border bg-blue-50 border-blue-100">
                                                                     <p className="font-bold text-blue-700 flex items-center gap-1 mb-1"><VideoCameraIcon className="h-3 w-3" /> Digital Triage Complete</p>
-                                                                    <p><span className="font-semibold">Action:</span> {asset.digitalFieldAdjusterAnalysis.recommendation}</p>
-                                                                    <p className="font-semibold">Est. Cost: <span className="font-mono text-green-700">${asset.digitalFieldAdjusterAnalysis.costEstimate.min} - ${asset.digitalFieldAdjusterAnalysis.costEstimate.max}</span></p>
+                                                                    <p className="text-blue-900">{asset.digitalFieldAdjusterAnalysis.recommendation}: Est. ${asset.digitalFieldAdjusterAnalysis.costEstimate.min} - ${asset.digitalFieldAdjusterAnalysis.costEstimate.max}</p>
                                                                 </div>
                                                             )}
+
+                                                            {/* Arkive Salvage Control */}
+                                                            <div className="mt-2 flex items-center gap-2">
+                                                                <label className="text-xs font-bold text-gray-500 uppercase">Salvage:</label>
+                                                                <select
+                                                                    value={asset.salvageDisposition || ''}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value as any;
+                                                                        setClaim(prev => ({
+                                                                            ...prev,
+                                                                            assets: prev.assets.map(a => a.id === asset.id ? {
+                                                                                ...a,
+                                                                                salvageDisposition: val || null,
+                                                                                salvageEstimatedRecovery: val === 'Sold' ? (a.marketValueAnalysis?.estimatedValue || a.claimedValue) * 0.15 : 0
+                                                                            } : a)
+                                                                        }));
+                                                                    }}
+                                                                    className="text-xs border-gray-300 rounded focus:ring-brand-primary focus:border-brand-primary py-0.5"
+                                                                >
+                                                                    <option value="">-- None --</option>
+                                                                    <option value="Sold">Sold (Arkive)</option>
+                                                                    <option value="Scrap">Scrap</option>
+                                                                    <option value="Hold">Hold</option>
+                                                                    <option value="Donate">Donate</option>
+                                                                </select>
+                                                                {asset.salvageDisposition === 'Sold' && (
+                                                                    <span className="text-xs text-green-600 font-bold">
+                                                                        Est. +{formatCurrency(asset.salvageEstimatedRecovery || 0)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
                                                             {asset.imageAnalysis && (<div className={`mt-2 text-xs p-2 rounded border ${asset.imageAnalysis.isConsistent ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}><p className={`font-semibold ${asset.imageAnalysis.isConsistent ? 'text-green-700' : 'text-red-700'}`}>Visual Truth: {asset.imageAnalysis.isConsistent ? 'Consistent' : 'Discrepancy'}</p>{!asset.imageAnalysis.isConsistent && (<ul className="list-disc pl-3 mt-1 text-gray-600">{asset.imageAnalysis.discrepancies.map((d, i) => <li key={i}>{d}</li>)}</ul>)}</div>)}
                                                             {asset.bundleAnalysis && (<div className="mt-2 text-xs p-2 rounded border bg-indigo-50 border-indigo-100"><p className="font-bold text-indigo-700 flex items-center mb-1"><CubeTransparentIcon className="h-3 w-3 mr-1" /> Bundle Unpacked</p><ul className="list-disc pl-3 text-indigo-900 space-y-0.5">{asset.bundleAnalysis.components.map((comp, i) => (<li key={i} className="flex justify-between"><span>{comp.name}</span><span className="font-mono opacity-70">{formatCurrency(comp.estimatedValue)}</span></li>))}</ul></div>)}
                                                             {asset.negotiationScript && (<div className="mt-2 p-2 bg-gray-100 rounded border border-gray-200 text-xs"><p className="font-bold text-gray-700 flex items-center mb-1"><MegaphoneIcon className="h-3 w-3 mr-1" /> Adjuster Script ({asset.negotiationScript.tone})</p><p className="italic text-gray-600">"{asset.negotiationScript.script}"</p></div>)}
@@ -2427,7 +2514,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                     {activeTab === 'financials' && <FinancialsTab claim={claim} settlementReport={settlementReport} />}
                     {activeTab === 'documents' && <DocumentsTab claim={claim} setClaim={setClaim} />}
                 </div>
-            </Card>
+            </Card >
 
             <Card className="bg-gray-50 border border-gray-200">
                 <div className="flex justify-between items-start mb-6">
@@ -2484,7 +2571,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                     </div>
                 )}
             </Card>
-        </div>
+        </div >
     );
 };
 

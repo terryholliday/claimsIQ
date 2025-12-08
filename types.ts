@@ -282,6 +282,15 @@ export interface ClaimSummary {
   suggestedActions: { title: string; reasoning: string }[];
 }
 
+export interface ArkiveManifest {
+  id: string;
+  createdDate: string;
+  assets: Asset[];
+  totalEstimatedRecovery: number;
+  pickupLocation: string;
+  status: 'Draft' | 'Sent_to_Auction' | 'Sold';
+}
+
 export interface Asset {
   id: string;
   name: string;
@@ -309,6 +318,10 @@ export interface Asset {
   negotiationScript?: NegotiationScript;
   subrogationAnalysis?: SubrogationAnalysis;
   digitalFieldAdjusterAnalysis?: DigitalFieldAdjusterAnalysis; // New
+  // Salvage / Arkive Fields
+  salvageDisposition?: 'Sold' | 'Scrap' | 'Hold' | 'Donate' | null;
+  salvageNotes?: string;
+  salvageEstimatedRecovery?: number;
 }
 
 export interface Claim {

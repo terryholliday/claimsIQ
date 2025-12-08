@@ -25,6 +25,7 @@ describe('DashboardScreen', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.spyOn(window, 'alert').mockImplementation(() => { });
     });
 
     it('renders the dashboard with claims list', () => {
