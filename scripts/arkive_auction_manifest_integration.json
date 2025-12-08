@@ -1,0 +1,54 @@
+{
+  "source": "ARKIVE Auctions Phase 1",
+  "extraction_reason": "Integration with TrueManifest/MyARK/TrueLedger",
+  "tasks": [
+    {
+      "title": "Define Core Auction Architecture",
+      "description": "Translate ARKIVE Auctions Phase 1 goals (MVP auction listing, bidding, and settlement flows) into a core architecture for listings, bidding, and settlements, ensuring seamless linkage to MyARK Golden Records.",
+      "security_level": "L0_INTERNAL",
+      "data_source": "product_specs",
+      "assigned_agent": "Lead Architect",
+      "agent_key": "lead_engineer"
+    },
+    {
+      "title": "Map Data Flows from MyARK and TrueManifest",
+      "description": "Define how item data, claim outcomes, and Golden Records from MyARK and TrueManifest flow into ARKIVE Auctions, including status updates back to those systems.",
+      "security_level": "L0_INTERNAL",
+      "data_source": "product_specs",
+      "assigned_agent": "Lead Architect",
+      "agent_key": "lead_engineer"
+    },
+    {
+      "title": "Build Auction Browsing & Detail Views",
+      "description": "Implement core ARKIVE Auctions UI for browsing auctions, viewing listing details, and understanding item provenance from MyARK and TrueLedger.",
+      "security_level": "L0_INTERNAL",
+      "data_source": "product_specs",
+      "assigned_agent": "Frontend Specialist",
+      "agent_key": "frontend_specialist"
+    },
+    {
+      "title": "Expose Provenance and Claim Status",
+      "description": "Surface claim status, provenance badges, and risk signals from TrueLedger and TrueManifest in ARKIVE Auctions interfaces.",
+      "security_level": "L0_INTERNAL",
+      "data_source": "product_specs",
+      "assigned_agent": "Frontend Specialist",
+      "agent_key": "frontend_specialist"
+    },
+    {
+      "title": "Ensure Mobile Identity & Session Integrity",
+      "description": "Align mobile authentication, session handling, and deep links between ARKIVE Auctions, MyARK, and TrueManifest for Phase 1.",
+      "security_level": "L0_INTERNAL",
+      "data_source": "product_specs",
+      "assigned_agent": "Mobile Experience Architect",
+      "agent_key": "mobile_architect"
+    },
+    {
+      "title": "Maintain Regression Coverage",
+      "description": "Maintain regression suites covering listing creation, bidding, payments, and MyARK/TrueManifest data ingestion into ARKIVE Auctions.",
+      "security_level": "L0_INTERNAL",
+      "data_source": "product_specs",
+      "assigned_agent": "QA Specialist",
+      "agent_key": "qa_specialist"
+    }
+  ]
+}
