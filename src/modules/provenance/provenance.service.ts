@@ -71,37 +71,95 @@ export class ProvenanceService {
     /**
      * GET /v1/claimsiq/items/{itemId}/preloss-provenance
      * Returns pre-loss provenance data for claims processing
+     * NOW DELEGATED TO PROVENIQ CORE
      */
-    public getPreLossProvenance(itemId: string): Result<PreLossProvenance> {
+    public async getPreLossProvenance(itemId: string): Promise<Result<PreLossProvenance>> {
         const record = this._items.get(itemId);
 
         if (!record) {
             // In production, would query HOME API or database
-            // For now, return mock data for demo purposes
             return this.getMockProvenance(itemId);
         }
 
+        try {
+            // CALL CORE BRAIN
+            // Vite uses import.meta.env for environment variables (prefixed with VITE_)
+            const CORE_URL = import.meta.env.VITE_PROVENIQ_CORE_URL || 'http://localhost:3000';
+            const coreResponse = await fetch(`${CORE_URL}/api/v1/provenance/score`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    photoCount: record.photoCount,
+                    receiptCount: record.receiptCount,
+                    warrantyCount: record.warrantyCount,
+                    genomeVerified: record.genomeVerified,
+                    ownershipTransfers: record.ownershipTransfers,
+                    lastVerifiedAt: record.lastVerifiedAt,
+                    documentedValue: record.documentedValue
+                })
+            });
+
+            if (!coreResponse.ok) {
+                console.error(`[PROVENANCE] Core API error: ${coreResponse.statusText}`);
+                // Fallback to local calculation if Core is down (Circuit Breaker)
+                return this.calculateLocal(record);
+            }
+
+            const coreResult = await coreResponse.json();
+            const { data } = coreResult; // Assuming standard response wrapper
+
+            const provenance: PreLossProvenance = {
+                itemId: record.itemId,
+                provenanceScore: data.score,
+                documentedValue: record.documentedValue,
+                evidencePackage: {
+                    photos: record.photoCount,
+                    receipts: record.receiptCount,
+                    genomeVerified: record.genomeVerified,
+                    lastConditionScore: record.conditionScore,
+                    warranties: record.warrantyCount,
+                },
+                claimReadiness: data.claimReadiness,
+                ownershipHistory: record.ownershipTransfers,
+                lastVerified: record.lastVerifiedAt,
+                fraudFlags: data.fraudFlags,
+            };
+
+            return { success: true, data: provenance };
+
+        } catch (error) {
+            console.error('[PROVENANCE] Failed to contact Core:', error);
+            return this.calculateLocal(record);
+        }
+    }
+
+    /**
+     * Fallback local calculation (Redundant safety net)
+     */
+    private calculateLocal(record: ItemProvenanceRecord): Result<PreLossProvenance> {
+        // ... (Legacy logic preserved for fallback)
         const claimReadiness = this.calculateClaimReadiness(record);
         const fraudFlags = this.detectFraudFlags(record);
 
-        const provenance: PreLossProvenance = {
-            itemId: record.itemId,
-            provenanceScore: record.provenanceScore,
-            documentedValue: record.documentedValue,
-            evidencePackage: {
-                photos: record.photoCount,
-                receipts: record.receiptCount,
-                genomeVerified: record.genomeVerified,
-                lastConditionScore: record.conditionScore,
-                warranties: record.warrantyCount,
-            },
-            claimReadiness,
-            ownershipHistory: record.ownershipTransfers,
-            lastVerified: record.lastVerifiedAt,
-            fraudFlags,
+        return {
+            success: true,
+            data: {
+                itemId: record.itemId,
+                provenanceScore: record.provenanceScore, // Use stored score
+                documentedValue: record.documentedValue,
+                evidencePackage: {
+                    photos: record.photoCount,
+                    receipts: record.receiptCount,
+                    genomeVerified: record.genomeVerified,
+                    lastConditionScore: record.conditionScore,
+                    warranties: record.warrantyCount,
+                },
+                claimReadiness,
+                ownershipHistory: record.ownershipTransfers,
+                lastVerified: record.lastVerifiedAt,
+                fraudFlags,
+            }
         };
-
-        return { success: true, data: provenance };
     }
 
     /**
