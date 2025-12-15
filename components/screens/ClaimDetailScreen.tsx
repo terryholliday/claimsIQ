@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Claim, Asset, FraudRiskLevel, AssetStatus, ClaimStatus, WeatherAnalysis, DuplicateAnalysis, RegulatoryCheck, SettlementReport, AuditLogEntry, LiveFNOLAnalysis, ClaimActivity, ClaimNote, ClaimDocument, DigitalFieldAdjusterAnalysis, ClaimHealthCheckResult, PlaybookStep } from '../../types';
 import { analyzeAssetForFraud, analyzeMarketValue, analyzeAssetImage, reconcileReceipt, findLKQReplacement, mapEvidenceToAssets, verifyWeather, detectDuplicates, analyzeBundles, checkPolicyExclusions, calculateDepreciation, auditCategories, generateNegotiationScript, identifySpecialtyItems, analyzeSubrogation, analyzeClaimPadding, performRegulatoryCheck, generateSettlementReport, urlToBase64, fileToBase64, runLiveFNOL, analyzeDamagePhoto, generateClaimSummary, runMyArkFastTrackCheck, runClaimHealthCheck } from '../../services/geminiService';
+import { convertToESXDocument, createESXFile, type ProveniqClaimData } from '../../services/xactimate';
 import { DEFAULT_PLAYBOOK_STEPS } from '../../constants';
 
 import { Card } from '../ui/Card';
@@ -1514,6 +1515,71 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
             setClaim(prev => ({ ...prev, status: ClaimStatus.SYNCED_TO_CMS }));
             alert("Manifest successfully exported to Guidewire ClaimCenter.");
         }, 1500);
+    };
+
+    const handleExportToXactimate = async () => {
+        if (!claimHealth.isExportable) {
+            alert("Cannot export: Please resolve blocking issues identified in the investigation guide.");
+            return;
+        }
+        
+        try {
+            // Convert claim to Proveniq format for ESX export using actual Claim/Asset properties
+            const claimData: ProveniqClaimData = {
+                claimId: claim.id,
+                claimNumber: claim.id,
+                dateOfLoss: claim.claimDate,
+                lossType: 'OTHER',
+                status: claim.status,
+                insured: {
+                    name: claim.policyholderName,
+                },
+                property: {
+                    address: {
+                        street1: claim.location,
+                        city: '',
+                        state: '',
+                        zipCode: '',
+                    },
+                    propertyType: 'SINGLE_FAMILY',
+                },
+                rooms: [{
+                    roomId: 'main',
+                    name: 'Contents',
+                    roomType: 'OTHER',
+                    floorLevel: 1,
+                    items: claim.assets.map((asset) => ({
+                        itemId: asset.id,
+                        description: asset.name,
+                        category: asset.category || 'OTHER',
+                        quantity: 1,
+                        replacementCost: asset.claimedValue || 0,
+                        actualCashValue: asset.depreciationAnalysis?.actualCashValue,
+                        serialNumber: asset.serialNumber,
+                        photos: asset.imageUrl ? [asset.imageUrl] : [],
+                    })),
+                }],
+            };
+
+            const esxDocument = convertToESXDocument(claimData);
+            const { blob, filename } = await createESXFile(esxDocument);
+
+            // Create downloadable ESX file (ZIP format)
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            logAction('EXPORT_XACTIMATE', `Exported ${claim.assets.length} items to Xactimate ESX format`);
+            alert(`Successfully exported to ${filename}\n\nThis ESX file can be imported into Xactimate via Tools > Import > Data Transfer.`);
+        } catch (error) {
+            console.error('ESX export error:', error);
+            alert('Failed to export to Xactimate format. Please try again.');
+        }
     };
 
     const handleBatchFraudAnalysis = async (suppressModal = false) => {
