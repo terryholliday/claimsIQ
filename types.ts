@@ -297,6 +297,10 @@ export interface ClaimHealthCheckResult {
   readyForExport: boolean;
 }
 
+/**
+ * @deprecated Use SalvageManifest from src/modules/salvage/salvage.types.ts
+ * Legacy type retained for backward compatibility with frontend components.
+ */
 export interface ArkiveManifest {
   id: string;
   createdDate: string;
@@ -304,6 +308,23 @@ export interface ArkiveManifest {
   totalEstimatedRecovery: number;
   pickupLocation: string;
   status: 'Draft' | 'Sent_to_Auction' | 'Sold';
+}
+
+/**
+ * SalvageManifest - Proveniq Ledger Integration
+ * Replaces ArkiveManifest. All salvage events are recorded on Proveniq Ledger.
+ */
+export interface SalvageManifest {
+  id: string;
+  claimId: string;
+  insurerWalletId: string;
+  createdDate: string;
+  assets: Asset[];
+  totalEstimatedRecovery: number;
+  actualRecovery?: number;
+  pickupLocation: string;
+  status: 'DRAFT' | 'PENDING_PICKUP' | 'IN_TRANSIT' | 'LISTED' | 'SOLD' | 'CANCELLED';
+  ledgerEventIds: string[]; // Proveniq Ledger event references
 }
 
 export interface Asset {
