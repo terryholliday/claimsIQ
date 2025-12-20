@@ -39,7 +39,7 @@ interface CaseFile {
 
 // --- CASE LIBRARY (33 REAL WORLD SCENARIOS) ---
 const CASE_LIBRARY: Record<string, CaseFile> = {
-    '101': { id: '101', title: 'The $2,000 Laptop', type: 'Valuation', scenario: "Insured claims a '5-year-old Gaming Laptop' for $2,500 (original purchase price). Policyholder insists on RCV payout despite obsolescence.", resolution: "TrueManifest™ identifies 2019 specs (Intel i7-9750H). Finds modern equivalent with superior performance for $800 retail. Applies 50% depreciation. Correct ACV Payout: $400. Savings: $2,100." },
+    '101': { id: '101', title: 'The $2,000 Laptop', type: 'Valuation', scenario: "Insured claims a '5-year-old Gaming Laptop' for $2,500 (original purchase price). Policyholder insists on RCV payout despite obsolescence.", resolution: "ClaimsIQ identifies 2019 specs (Intel i7-9750H). Finds modern equivalent with superior performance for $800 retail. Applies 50% depreciation. Correct ACV Payout: $400. Savings: $2,100." },
     '102': { id: '102', title: 'The "Stock" Rolex', type: 'Forensic', scenario: "Claimant uploads a photo of a Rolex Submariner as proof of ownership. The photo is high-resolution, perfectly lit, and metadata is stripped.", resolution: "Visual Truth detected the image pixel signature matched a listing on eBay from 2021. Reverse image search confirmed it was a stock photo. Claim denied for Material Misrepresentation (Hard Fraud)." },
     '103': { id: '103', title: 'The Plasma Paradox', type: 'Valuation', scenario: "Claimant demands $3,000 for a 60-inch Plasma TV purchased in 2012, citing 'rare technology' value.", resolution: "Check Market tool identifies Plasma as obsolete. Identifies 'Like Kind & Quality' (LKQ) replacement as a 65-inch 4K LED Smart TV retailing for $450. 90% depreciation applied. Final Payout: $45." },
     '104': { id: '104', title: 'The "Consultant\'s" Office', type: 'Policy', scenario: "Insured claims $15,000 for a home office setup including 3 servers and a commercial plotter. Items categorized as 'Electronics' to avoid limits.", resolution: "Taxonomy Auditor flagged items as 'Business Property' based on model numbers (Enterprise Grade). Standard HO-3 policy has a $2,500 limit for on-premises business property. Claim capped at $2,500. Savings: $12,500." },
@@ -59,7 +59,7 @@ const CASE_LIBRARY: Record<string, CaseFile> = {
     '118': { id: '118', title: 'The Boat in the Driveway', type: 'Policy', scenario: "Tree falls on a 20ft Pontoon Boat parked in the driveway. Claim: $18,000.", resolution: "Policy Guardian™ flagged 'Watercraft'. HO-3 policies usually only cover watercraft up to $1,500 and only for specific perils. Claim denied (Requires Marine Policy)." },
     '119': { id: '119', title: 'The "Gift" Defense', type: 'Intake', scenario: "User claims $10k in jewelry but has zero receipts. Says 'They were gifts'.", resolution: "Manifest Assistant prompted adjuster to ask for 'Wearing Photos'. Visual Truth analyzed historical social media photos to verify possession and date. Coverage granted based on forensic verification." },
     '120': { id: '120', title: 'The Commercial Drone', type: 'Policy', scenario: "DJI Matrice 300 ($12,000) stolen. User is a wedding photographer.", resolution: "Taxonomy Auditor found user website via email domain. Flagged item as 'Business Property'. Policy sub-limit of $2,500 applied. Savings: $9,500." },
-    '121': { id: '121', title: 'The Double-Dip Receipt', type: 'Forensic', scenario: "Receipt for a Diamond Ring submitted for Claim A. Same receipt image found in Claim B (different policyholder).", resolution: "TrueManifest Global Hash Database flagged the image file hash as a duplicate across two different accounts. Both claims flagged for Organized Ring Activity." },
+    '121': { id: '121', title: 'The Double-Dip Receipt', type: 'Forensic', scenario: "Receipt for a Diamond Ring submitted for Claim A. Same receipt image found in Claim B (different policyholder).", resolution: "ClaimsIQ Global Hash Database flagged the image file hash as a duplicate across two different accounts. Both claims flagged for Organized Ring Activity." },
     '122': { id: '122', title: 'The Ransomware Claim', type: 'Fraud', scenario: "User claims $50k for 'Data Recovery' services after home network hack. Invoice is from a company registered yesterday.", resolution: "Scan Fraud detected the vendor's domain age is < 24 hours. Subro Spotter linked the vendor address to a known shell company. Policy Guardian noted standard HO-3 excludes Cyber Extortion. Claim Denied." },
     '123': { id: '123', title: 'The "Scheduled" Fine Art', type: 'Policy', scenario: "User claims $50k painting on HO-3 policy. It is already listed on a scheduled Personal Articles Floater (PAF).", resolution: "Policy Guardian detected 'Duplicate Coverage'. HO-3 is excess over specific insurance. Directed adjuster to file against PAF policy to preserve HO-3 loss history." },
     '124': { id: '124', title: 'The Commercial Kitchen', type: 'Policy', scenario: "Residential fire. Kitchen contains 4 Sous Vide machines, a Salamander broiler, and 200lbs of flour.", resolution: "Scan Fraud identified 'Commercial Equipment Density'. Flagged as an undeclared 'Business Pursuit' (Catering Business). Policy excludes business liability and property. Claim denied." },
@@ -168,7 +168,7 @@ const InteractiveCaseStudy: React.FC<{ caseId: string }> = ({ caseId }) => {
                         </div>
                         <div className="flex justify-between items-start mb-2">
                             <p className="text-xs font-bold text-green-800 uppercase flex items-center gap-1">
-                                <SparklesIcon className="h-4 w-4" /> TrueManifest™ Analysis
+                                <SparklesIcon className="h-4 w-4" /> ClaimsIQ Analysis
                             </p>
                             <span className="text-xs font-bold bg-green-200 text-green-800 px-2 py-1 rounded-full animate-pulse">+50 XP</span>
                         </div>
@@ -267,7 +267,7 @@ const ComparisonGrid: React.FC<{ oldWay: string; newWay: string }> = ({ oldWay, 
         </div>
         <div className="bg-blue-50/50 p-6">
             <div className="flex items-center gap-2 mb-3 text-brand-primary font-bold text-xs uppercase tracking-wider">
-                <CheckCircleIcon className="h-4 w-4" /> The TrueManifest Way
+                <CheckCircleIcon className="h-4 w-4" /> The ClaimsIQ Way
             </div>
             <p className="text-blue-900 text-sm font-medium leading-relaxed">{newWay}</p>
         </div>
@@ -292,7 +292,7 @@ const TRAINING_MODULES: Module[] = [
                                 <MobilePhoneIcon className="h-6 w-6 text-brand-accent" /> Why PROVENIQ Home Matters
                             </h3>
                             <p className="text-blue-100 text-sm leading-relaxed">
-                                TrueManifest™ is powered by <strong>PROVENIQ Home</strong>, a consumer inventory app that allows policyholders to scan and log items <em>before</em> a loss occurs. This creates a "Golden Record" of truth that is virtually impossible to fake.
+                                ClaimsIQ is powered by <strong>PROVENIQ Home</strong>, a consumer inventory app that allows policyholders to scan and log items <em>before</em> a loss occurs. This creates a "Golden Record" of truth that is virtually impossible to fake.
                             </p>
                         </div>
 
@@ -388,11 +388,11 @@ const TRAINING_MODULES: Module[] = [
                         </div>
                         <ComparisonGrid 
                             oldWay="A user emails a PDF list of items created 2 weeks after the fire. No proof of ownership exists. Adjuster must trust the user's word."
-                            newWay="TrueManifest shows an immutable log: Item scanned 3 years ago. Receipt uploaded 2 years ago. Photo geo-tagged at the insured address."
+                            newWay="ClaimsIQ shows an immutable log: Item scanned 3 years ago. Receipt uploaded 2 years ago. Photo geo-tagged at the insured address."
                         />
                         <h3 className="text-lg font-bold text-neutral-dark mt-6">Digital Fingerprinting</h3>
                         <p className="text-gray-700">
-                            Every file uploaded to TrueManifest is hashed (SHA-256). This creates a unique digital fingerprint. If the user tries to alter the receipt later, the hash will change, and the system will flag the anomaly.
+                            Every file uploaded to ClaimsIQ is hashed (SHA-256). This creates a unique digital fingerprint. If the user tries to alter the receipt later, the hash will change, and the system will flag the anomaly.
                         </p>
                     </div>
                 )
@@ -405,7 +405,7 @@ const TRAINING_MODULES: Module[] = [
                     <div className="space-y-6 text-gray-800">
                         <h3 className="text-xl font-bold text-neutral-dark">Protecting PII</h3>
                         <p className="text-gray-700">
-                            You are handling sensitive banking and personal data. TrueManifest operates on a Zero-Trust model. Every action you take—viewing a file, approving a payment, denying an item—is cryptographically logged.
+                            You are handling sensitive banking and personal data. ClaimsIQ operates on a Zero-Trust model. Every action you take—viewing a file, approving a payment, denying an item—is cryptographically logged.
                         </p>
                         <ConceptFlashcard 
                             title="Immutable Audit Logs"
@@ -509,7 +509,7 @@ const TRAINING_MODULES: Module[] = [
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                             <StatCard label="Avg. Overpayment" value="12%" subtext="Due to incorrect RCV pricing." color="red" />
                             <StatCard label="Soft Fraud" value="15%" subtext="Claims with artificial padding." color="red" />
-                            <StatCard label="TrueManifest Goal" value="0%" subtext="Leakage via Asset Intelligence." color="green" />
+                            <StatCard label="ClaimsIQ Goal" value="0%" subtext="Leakage via Asset Intelligence." color="green" />
                         </div>
                     </div>
                 )

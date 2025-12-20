@@ -560,7 +560,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
       {/* Us vs. Them Section */}
       <div className="bg-neutral-50 p-8 rounded-2xl border border-neutral-medium mt-12">
           <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-neutral-dark">TrueManifest™ vs. The Status Quo</h2>
+              <h2 className="text-3xl font-bold text-neutral-dark">ClaimsIQ vs. The Status Quo</h2>
               <p className="text-gray-600 mt-2">Why leading carriers are switching from manual processing to Asset Intelligence.</p>
           </div>
           
@@ -569,7 +569,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
               <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 border-b border-gray-200 font-bold text-sm text-gray-500 uppercase tracking-wider">
                   <div>Capabilities</div>
                   <div>Legacy Manual Process</div>
-                  <div className="text-brand-primary">TrueManifest™ AI</div>
+                  <div className="text-brand-primary">ClaimsIQ AI</div>
               </div>
               
               <div className="p-4 space-y-1">

@@ -12,7 +12,7 @@ interface ManifestAssistantProps {
 
 const ManifestAssistant: React.FC<ManifestAssistantProps> = ({ claim, isOpen, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', text: `Hello! I'm your Manifest Assistant. I've reviewed the claim for ${claim.policyholderName}. How can I help you with this case?` }
+    { role: 'model', text: `Hello! I'm your Claims Assistant. I've reviewed the claim for ${claim.policyholderName}. How can I help you with this case?` }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -76,7 +76,7 @@ const ManifestAssistant: React.FC<ManifestAssistantProps> = ({ claim, isOpen, on
       <div className="bg-brand-primary text-white p-4 flex justify-between items-center shadow-md">
         <div className="flex items-center space-x-2">
           <SparklesIcon className="h-6 w-6 text-brand-accent" />
-          <h3 className="font-semibold text-lg">Manifest Assistant</h3>
+          <h3 className="font-semibold text-lg">Claims Assistant</h3>
         </div>
         <button onClick={onClose} className="hover:bg-brand-secondary rounded-full p-1 transition-colors">
           <XMarkIcon className="h-6 w-6" />

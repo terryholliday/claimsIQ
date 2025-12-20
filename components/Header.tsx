@@ -12,7 +12,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
   const notificationRef = useRef<HTMLDivElement>(null);
 
   const notifications = [
-    { id: 1, type: 'warning', text: "Fraud Alert: High Risk detected on Manifest MF-2024-004.", time: "10m ago" },
+    { id: 1, type: 'warning', text: "Fraud Alert: High Risk detected on Claim MF-2024-004.", time: "10m ago" },
     { id: 2, type: 'success', text: "System Update: Gemini 2.5 Flash model integration complete.", time: "1h ago" },
     { id: 3, type: 'info', text: "New Assignment: 3 Claims added to your inbox.", time: "2h ago" }
   ];

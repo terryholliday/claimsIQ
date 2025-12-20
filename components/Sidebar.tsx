@@ -11,7 +11,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeScreen, onNavigate }) => {
   const navItems = [
     { screen: Screen.FEATURES, label: 'Platform Features', icon: <LightBulbIcon /> },
     { screen: Screen.TRAINING, label: 'Training Academy', icon: <AcademicCapIcon /> },
-    { screen: Screen.DASHBOARD, label: 'Manifest Inbox', icon: <DashboardIcon /> },
+    { screen: Screen.DASHBOARD, label: 'Claims Inbox', icon: <DashboardIcon /> },
     { screen: Screen.COMPLIANCE, label: 'Regulatory Compliance', icon: <BuildingLibraryIcon /> },
     { screen: Screen.API_DOCS, label: 'API Documentation', icon: <CodeBracketIcon /> },
   ];
