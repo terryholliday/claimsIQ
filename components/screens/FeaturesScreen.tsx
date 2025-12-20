@@ -285,9 +285,9 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
               <FeatureDeepDive 
                   icon={<MobilePhoneIcon className="h-6 w-6 text-blue-600" />}
                   title="Omni-Channel Intake"
-                  description={<>Seamlessly ingest structured claim data directly from the MyARK<sup className="text-[0.6em]">&trade;</sup> consumer app, removing data entry bottlenecks. Also supports web portal uploads and API injection from legacy FNOL systems.</>}
+                  description={<>Seamlessly ingest structured claim data directly from the PROVENIQ Home consumer app, removing data entry bottlenecks. Also supports web portal uploads and API injection from legacy FNOL systems.</>}
                   bullets={[
-                      <>MyARK<sup className="text-[0.6em]">&trade;</sup> App Integration</>,
+                      "PROVENIQ Home App Integration",
                       "Legacy System API Bridge",
                       "Structured JSON Payloads"
                   ]}
@@ -419,11 +419,11 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
               <FeatureDeepDive 
                   icon={<MobilePhoneIcon className="h-6 w-6 text-blue-600" />}
                   title="Origin Verifier"
-                  description={<>Trust scoring based on data source. We distinguish between high-trust items verified Pre-Loss in the MyARK<sup className="text-[0.6em]">&trade;</sup> app versus items added manually Post-Loss.</>}
+                  description={<>Trust scoring based on data source. We distinguish between high-trust items verified Pre-Loss in the PROVENIQ Home app versus items added manually Post-Loss.</>}
                   bullets={[
                       "Pre-Loss vs. Post-Loss tagging",
                       "Provenance tracking",
-                      <>MyARK<sup className="text-[0.6em]">&trade;</sup> Sync Integration</>
+                      "PROVENIQ Home Sync Integration"
                   ]}
               />
               <FeatureDeepDive 
@@ -493,7 +493,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
               </div>
               <div className="space-y-6">
                   <p className="text-gray-600 text-sm">
-                      TrueManifest™ is designed as an API-first middleware. We ingest data from MyARK<sup className="text-[0.6em]">&trade;</sup>, process it, and push clean, structured JSON payloads directly into your core claims system via REST API.
+                      TrueManifest™ is designed as an API-first middleware. We ingest data from PROVENIQ Home, process it, and push clean, structured JSON payloads directly into your core claims system via REST API.
                   </p>
                   <div className="flex flex-wrap gap-4">
                       <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-700 font-bold text-sm border border-gray-200">Guidewire ClaimCenter</div>

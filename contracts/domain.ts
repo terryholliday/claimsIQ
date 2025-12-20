@@ -1,13 +1,13 @@
 /**
- * TrueArk Unified Domain Model
+ * PROVENIQ Unified Domain Model
  * 
  * This file contains the canonical definitions for core entities shared across
- * MyARK, TrueManifest, and Arkive.
+ * PROVENIQ Home, ClaimsIQ, and Bids.
  */
 
 // --- ID Types ---
 export type UUID = string; // e.g., "123e4567-e89b-12d3-a456-426614174000"
-export type URN = string;  // e.g., "urn:trueark:vault:123"
+export type URN = string;  // e.g., "urn:proveniq:vault:123"
 
 // --- Enums ---
 
@@ -48,7 +48,7 @@ export interface User {
 }
 
 /**
- * A secure container for Assets within MyARK.
+ * A secure container for Assets within PROVENIQ Home.
  * Typically represents a physical location (Home, Office).
  */
 export interface Vault {
@@ -75,7 +75,7 @@ export interface Vault {
 export interface Asset {
     id: UUID;
     urn: URN;
-    vaultId?: UUID; // Null if created post-loss without MyARK
+    vaultId?: UUID; // Null if created post-loss without PROVENIQ Home
     name: string;
     description: string;
     category: string;
@@ -95,7 +95,7 @@ export interface Asset {
     serialNumber?: string;
 
     // Status
-    isVerified: boolean; // True if validated by MyArk logic
+    isVerified: boolean; // True if validated by PROVENIQ Home logic
     metadata: Record<string, any>;
 }
 
@@ -165,7 +165,7 @@ export interface SalvageItem {
 }
 
 /**
- * A grouping of SalvageItems for sale on the Arkive platform.
+ * A grouping of SalvageItems for sale on the PROVENIQ Bids platform.
  */
 export interface AuctionLot {
     id: UUID;

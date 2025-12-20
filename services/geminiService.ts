@@ -1,6 +1,5 @@
-
 import { GoogleGenAI, Type, Chat, GenerateContentResponse } from '@google/genai';
-import { Asset, AssetStatus, FraudAnalysis, FraudRiskLevel, MarketValueAnalysis, Claim, ImageAnalysis, ReceiptMatch, LKQAnalysis, WeatherAnalysis, DuplicateAnalysis, BundleAnalysis, PolicyCheck, DepreciationAnalysis, CategoryAnalysis, NegotiationScript, SpecialtyAnalysis, SubrogationAnalysis, PaddingAnalysis, StateRegulation, FilingReport, RegulatoryCheck, SettlementReport, LiveFNOLAnalysis, DigitalFieldAdjusterAnalysis, LiveFNOLTranscriptEntry, LiveFNOLIntelligenceCard, ClaimSummary, MyArkFastTrackResult, ClaimHealthCheckResult } from '../types';
+import { Asset, AssetStatus, FraudAnalysis, FraudRiskLevel, MarketValueAnalysis, Claim, ImageAnalysis, ReceiptMatch, LKQAnalysis, WeatherAnalysis, DuplicateAnalysis, BundleAnalysis, PolicyCheck, DepreciationAnalysis, CategoryAnalysis, NegotiationScript, SpecialtyAnalysis, SubrogationAnalysis, PaddingAnalysis, StateRegulation, FilingReport, RegulatoryCheck, SettlementReport, LiveFNOLAnalysis, DigitalFieldAdjusterAnalysis, LiveFNOLTranscriptEntry, LiveFNOLIntelligenceCard, ClaimSummary, HomeFastTrackResult, ClaimHealthCheckResult } from '../types';
 
 // --- API Request Helpers with Error Handling & Retries ---
 
@@ -1271,11 +1270,11 @@ export const generateSettlementReport = async (claim: Claim, assets: Asset[]): P
     }
 };
 
-// 20. MyARK Fast-Track Check
-export const runMyArkFastTrackCheck = async (claim: Claim): Promise<MyArkFastTrackResult | null> => {
+// 20. PROVENIQ Home Fast-Track Check
+export const runHomeFastTrackCheck = async (claim: Claim): Promise<HomeFastTrackResult | null> => {
     const prompt = `
-        You are the 'MyARK Fast-Track Engine'.
-        Review this incoming claim from the MyARK mobile app.
+        You are the 'PROVENIQ Home Fast-Track Engine'.
+        Review this incoming claim from the PROVENIQ Home app.
         
         Claim Details:
         - Policyholder: ${claim.policyholderName}
@@ -1313,9 +1312,9 @@ export const runMyArkFastTrackCheck = async (claim: Claim): Promise<MyArkFastTra
             }
         }));
         // FIX: Safely handle potentially undefined text property.
-        return JSON.parse(response.text || '{}') as MyArkFastTrackResult;
+        return JSON.parse(response.text || '{}') as HomeFastTrackResult;
     } catch (e) {
-        console.error("MyARK Fast-Track Error", e);
+        console.error("Home Fast-Track Error", e);
         return null;
     }
 };

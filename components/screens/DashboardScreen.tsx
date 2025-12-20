@@ -102,7 +102,7 @@ const CampaignModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isO
                   The Detected Risk
                 </h4>
                 <p className="text-red-800 text-sm leading-relaxed">
-                  Analysis of MyARK inventory photos has identified <strong>1,240 active policies</strong> with verified <strong>"Black Rubber Washing Machine Hoses"</strong> older than 5 years. These hoses have a 40% failure rate, leading to catastrophic water damage.
+                  Analysis of PROVENIQ Home inventory photos has identified <strong>1,240 active policies</strong> with verified <strong>"Black Rubber Washing Machine Hoses"</strong> older than 5 years. These hoses have a 40% failure rate, leading to catastrophic water damage.
                 </p>
               </div>
 
@@ -130,7 +130,7 @@ const CampaignModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isO
 
               {/* The Action */}
               <div className="border border-gray-200 rounded-xl p-5 bg-white shadow-sm">
-                <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Proposed MyARK<sup className="text-[0.6em]">&trade;</sup> Push Notification</h4>
+                <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Proposed PROVENIQ Home Push Notification</h4>
                 <div className="flex gap-4">
                   <div className="shrink-0 w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white text-xl font-bold">
                     <ShieldCheckIcon className="h-6 w-6" />
@@ -219,7 +219,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [syncedIds, setSyncedIds] = useState<Set<string>>(new Set());
-  const [isSyncingMyARK, setIsSyncingMyARK] = useState(false);
+  const [isSyncingHome, setIsSyncingHome] = useState(false);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [showSceneReconModal, setShowSceneReconModal] = useState(false);
@@ -230,7 +230,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
 
   const getStatusColor = (status: ClaimStatus) => {
     switch (status) {
-      case ClaimStatus.NEW_FROM_MYARK: return 'blue';
+      case ClaimStatus.NEW_FROM_HOME: return 'blue';
       case ClaimStatus.READY_TO_SYNC: return 'green';
       case ClaimStatus.SYNCED_TO_CMS: return 'gray';
       case ClaimStatus.FLAGGED_FOR_REVIEW: return 'red';
@@ -283,13 +283,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
     }, 500);
   };
 
-  const handleMyARKSync = () => {
-    setIsSyncingMyARK(true);
+  const handleHomeSync = () => {
+    setIsSyncingHome(true);
     setTimeout(() => {
       const count = onSyncClaims();
-      setIsSyncingMyARK(false);
+      setIsSyncingHome(false);
       setLastSynced(new Date());
-      alert(`Successfully fetched ${count} new manifests from MyARK™.`);
+      alert(`Successfully fetched ${count} new manifests from PROVENIQ Home.`);
     }, 1500);
   };
 
@@ -308,16 +308,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
         </div>
         <div>
           <button
-            onClick={handleMyARKSync}
-            disabled={isSyncingMyARK}
+            onClick={handleHomeSync}
+            disabled={isSyncingHome}
             className="bg-brand-secondary hover:bg-brand-primary text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center space-x-2 transition-all"
           >
-            {isSyncingMyARK ? (
+            {isSyncingHome ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
             ) : (
               <CloudArrowDownIcon className="h-5 w-5" />
             )}
-            <span>Sync from MyARK<sup className="text-[0.6em] ml-0.5">&trade;</sup></span>
+            <span>Sync from PROVENIQ Home</span>
           </button>
         </div>
       </div>
@@ -325,15 +325,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <button
-          onClick={() => setStatusFilter(prev => prev === ClaimStatus.NEW_FROM_MYARK ? 'All' : ClaimStatus.NEW_FROM_MYARK)}
+          onClick={() => setStatusFilter(prev => prev === ClaimStatus.NEW_FROM_HOME ? 'All' : ClaimStatus.NEW_FROM_HOME)}
           className="text-left w-full transition-all duration-200 hover:shadow-lg hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 rounded-lg"
         >
-          <Card className={`p-4 h-full ${statusFilter === ClaimStatus.NEW_FROM_MYARK ? 'border-brand-primary ring-1 ring-brand-primary' : ''}`}>
+          <Card className={`p-4 h-full ${statusFilter === ClaimStatus.NEW_FROM_HOME ? 'border-brand-primary ring-1 ring-brand-primary' : ''}`}>
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">New Inbound</p>
-                <p className="text-2xl font-bold text-brand-primary">{safeClaims.filter(c => c.status === ClaimStatus.NEW_FROM_MYARK).length}</p>
-                <p className="text-xs text-gray-400 mt-1">From MyARK<sup className="text-[0.6em]">&trade;</sup> App</p>
+                <p className="text-2xl font-bold text-brand-primary">{safeClaims.filter(c => c.status === ClaimStatus.NEW_FROM_HOME).length}</p>
+                <p className="text-xs text-gray-400 mt-1">From PROVENIQ Home</p>
               </div>
               <div className="p-2 bg-brand-primary/10 rounded-lg">
                 <MobilePhoneIcon className="h-5 w-5 text-brand-primary" />
@@ -408,7 +408,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
                 <p className="text-sm text-gray-500">Prevent future claims with network data.</p>
               </div>
             </div>
-            <p className="text-xs text-gray-600 leading-relaxed flex-grow">Anonymized risk signals from the MyARK<sup className="text-[0.6em]">&trade;</sup> user base to prevent future claims. Identify widespread risks (e.g. recalled hoses) and launch mitigation campaigns.</p>
+            <p className="text-xs text-gray-600 leading-relaxed flex-grow">Anonymized risk signals from the PROVENIQ Home user base to prevent future claims. Identify widespread risks (e.g. recalled hoses) and launch mitigation campaigns.</p>
             <button
               onClick={() => setShowCampaignModal(true)}
               className="mt-4 text-sm bg-blue-50 text-blue-700 font-bold px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200 shadow-sm flex items-center gap-2 w-full justify-center"
@@ -453,11 +453,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
           All Manifests
         </button>
         <button
-          onClick={() => setStatusFilter(ClaimStatus.NEW_FROM_MYARK)}
-          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${statusFilter === ClaimStatus.NEW_FROM_MYARK ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
+          onClick={() => setStatusFilter(ClaimStatus.NEW_FROM_HOME)}
+          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${statusFilter === ClaimStatus.NEW_FROM_HOME ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
         >
           <MobilePhoneIcon className="h-3 w-3" />
-          New from MyARK
+          New from PROVENIQ Home
         </button>
         <button
           onClick={() => setStatusFilter(ClaimStatus.READY_TO_SYNC)}
@@ -493,7 +493,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
                 <option value="All">All Manifest Statuses</option>
-                <option value={ClaimStatus.NEW_FROM_MYARK}>{ClaimStatus.NEW_FROM_MYARK}</option>
+                <option value={ClaimStatus.NEW_FROM_HOME}>{ClaimStatus.NEW_FROM_HOME}</option>
                 <option value={ClaimStatus.READY_TO_SYNC}>{ClaimStatus.READY_TO_SYNC}</option>
                 <option value={ClaimStatus.FLAGGED_FOR_REVIEW}>{ClaimStatus.FLAGGED_FOR_REVIEW}</option>
                 <option value={ClaimStatus.SYNCED_TO_CMS}>{ClaimStatus.SYNCED_TO_CMS}</option>
@@ -577,9 +577,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
                     >
                       <td className="p-4">
                         <div className="flex flex-col gap-1">
-                          <div className="flex items-center text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-1 w-fit" title="Source: MyARK App">
+                          <div className="flex items-center text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-1 w-fit" title="Source: PROVENIQ Home">
                             <MobilePhoneIcon className="h-3 w-3 mr-1" />
-                            MyARK<sup className="text-[0.6em]">&trade;</sup>
+                            PROVENIQ Home
                           </div>
                           {claim.preLossMetadata && (
                             <div className="text-[10px] text-gray-400 font-medium">
@@ -594,7 +594,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ claims = [], onSelect
                       <td className="p-4 font-medium">{formatCurrency(claim.totalClaimedValue)}</td>
                       <td className="p-4">
                         <Badge color={getStatusColor(currentStatus)}>
-                          {currentStatus === ClaimStatus.NEW_FROM_MYARK ? <>New from MyARK<sup className="text-[0.6em]">&trade;</sup></> : currentStatus}
+                          {currentStatus === ClaimStatus.NEW_FROM_HOME ? <>New from PROVENIQ Home</> : currentStatus}
                         </Badge>
                       </td>
                       <td className="p-4 text-right">

@@ -9,7 +9,7 @@ describe('DashboardScreen', () => {
         createMockClaim({
             id: 'claim-1',
             policyholderName: 'Alice',
-            status: ClaimStatus.NEW_FROM_MYARK,
+            status: ClaimStatus.NEW_FROM_HOME,
             totalClaimedValue: 1200
         }),
         createMockClaim({
@@ -50,14 +50,13 @@ describe('DashboardScreen', () => {
         expect(screen.queryByText('Alice')).not.toBeInTheDocument();
     });
 
-    it('handles Sync from MyARK action', async () => {
+    it('handles Sync from PROVENIQ Home action', async () => {
         vi.useFakeTimers();
         render(<DashboardScreen claims={mockClaims} onSelectClaim={onSelectClaim} onSyncClaims={onSyncClaims} />);
 
-        // Find Sync button. Text contains "Sync from MyARK"
-        // Since MyARK has a trademark using <sup>, getting by text might be tricky if it splits nodes.
+        // Find Sync button. Text contains "Sync from PROVENIQ Home"
         // We can search by role 'button' and text match.
-        const syncButton = screen.getByRole('button', { name: /Sync from MyARK/i });
+        const syncButton = screen.getByRole('button', { name: /Sync from PROVENIQ Home/i });
         fireEvent.click(syncButton);
 
         // It sets local state loading, then calls onSyncClaims after timeout

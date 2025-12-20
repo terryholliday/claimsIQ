@@ -9,7 +9,7 @@ export enum Screen {
 }
 
 export enum ClaimStatus {
-  NEW_FROM_MYARK = 'New from MyARK',
+  NEW_FROM_HOME = 'New from PROVENIQ Home',
   READY_TO_SYNC = 'Ready to Sync',
   SYNCED_TO_CMS = 'Synced to CMS',
   FLAGGED_FOR_REVIEW = 'Flagged for Review',
@@ -213,7 +213,7 @@ export interface DigitalFieldAdjusterAnalysis {
 
 // --- NEW TYPES FOR CORE SYSTEM FEATURES ---
 
-export interface MyArkPreLossMetadata {
+export interface HomePreLossMetadata {
   preLossItemCount: number;
   preLossTotalValue: number;
   documentedPhotosCount: number;
@@ -221,7 +221,7 @@ export interface MyArkPreLossMetadata {
   lastUpdated: string;
 }
 
-export interface MyArkFastTrackResult {
+export interface HomeFastTrackResult {
   riskScore: number; // 0-100
   verdict: 'low-risk' | 'medium-risk' | 'high-risk';
   summary: string;
@@ -301,7 +301,7 @@ export interface ClaimHealthCheckResult {
  * @deprecated Use SalvageManifest from src/modules/salvage/salvage.types.ts
  * Legacy type retained for backward compatibility with frontend components.
  */
-export interface ArkiveManifest {
+export interface LegacySalvageManifest {
   id: string;
   createdDate: string;
   assets: Asset[];
@@ -312,7 +312,7 @@ export interface ArkiveManifest {
 
 /**
  * SalvageManifest - Proveniq Ledger Integration
- * Replaces ArkiveManifest. All salvage events are recorded on Proveniq Ledger.
+ * Replaces LegacySalvageManifest. All salvage events are recorded on Proveniq Ledger.
  */
 export interface SalvageManifest {
   id: string;
@@ -354,7 +354,7 @@ export interface Asset {
   negotiationScript?: NegotiationScript;
   subrogationAnalysis?: SubrogationAnalysis;
   digitalFieldAdjusterAnalysis?: DigitalFieldAdjusterAnalysis; // New
-  // Salvage / Arkive Fields
+  // Salvage / Legacy Fields
   salvageDisposition?: 'Sold' | 'Scrap' | 'Hold' | 'Donate' | null;
   salvageNotes?: string;
   salvageEstimatedRecovery?: number;
@@ -383,8 +383,8 @@ export interface Claim {
   notes?: ClaimNote[];
   documents?: ClaimDocument[];
   financials?: Financials;
-  preLossMetadata?: MyArkPreLossMetadata; // New for MyARK Intake
-  myArkFastTrackResult?: MyArkFastTrackResult; // New for MyARK Fast-Track
+  preLossMetadata?: HomePreLossMetadata; // New for PROVENIQ Home Intake
+  homeFastTrackResult?: HomeFastTrackResult; // New for PROVENIQ Home Fast-Track
   currentPlaybookStepId?: string;
   payments?: ClaimPayment[];
   generatedLetters?: GeneratedLetter[];

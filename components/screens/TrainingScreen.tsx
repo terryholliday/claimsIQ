@@ -70,7 +70,7 @@ const CASE_LIBRARY: Record<string, CaseFile> = {
     '129': { id: '129', title: 'The 3D Printed Receipt', type: 'Forensic', scenario: "Receipt for a $4,000 engagement ring looks perfect, but the paper grain is identical to another receipt from a different store.", resolution: "Document Forensics detected the exact same paper fiber noise pattern on two different receipts. Indicates digital forgery using the same background template." },
     '130': { id: '130', title: 'The " Mysterious" Disappearance', type: 'Policy', scenario: "User lost a diamond stone from a ring while gardening. Claim filed under Theft.", resolution: "Policy Guardian flagged 'Mysterious Disappearance'. Standard HO-3 covers Theft (requires evidence of taking), but not simple loss, unless a specific 'Scheduled Jewelry' endorsement is present." },
     '131': { id: '131', title: 'The Nervous Narrator', type: 'Intake', scenario: "During Live FNOL, claimant stutters when asked for the Time of Loss and contradicts their written statement.", resolution: "Live Intake Co-Pilot flagged the verbal inconsistency ('Tuesday' vs 'Wednesday') and detected voice stress markers. Recommended assigning to SIU for a recorded statement." },
-    '132': { id: '132', title: 'The Floor "Scratch"', type: 'NextGen', scenario: "User submits a 'post-loss' photo of a scratched hardwood floor, demanding a full refinish ($5k).", resolution: "Digital Field Adjuster compared the damage photo to the 'pre-loss' photo from MyARK. It analyzed pixel depth and lighting, determined it was a surface-level gouge, and calculated a 95% repairability index. Recommended a $75 repair kit, avoiding $4,925 in unnecessary vendor costs." },
+    '132': { id: '132', title: 'The Floor "Scratch"', type: 'NextGen', scenario: "User submits a 'post-loss' photo of a scratched hardwood floor, demanding a full refinish ($5k).", resolution: "Digital Field Adjuster compared the damage photo to the 'pre-loss' photo from PROVENIQ Home. It analyzed pixel depth and lighting, determined it was a surface-level gouge, and calculated a 95% repairability index. Recommended a $75 repair kit, avoiding $4,925 in unnecessary vendor costs." },
     '133': { id: '133', title: 'The Recalled Hose', type: 'NextGen', scenario: "Proactive scan identifies 1,200 policies with 'Black Rubber' washer hoses.", resolution: "Risk Shield Campaign sent a push notification with a coupon for Steel Braided hoses. 40% of users redeemed it. Estimated 12 water claims prevented ($180k savings)." },
 };
 
@@ -279,7 +279,7 @@ const TRAINING_MODULES: Module[] = [
     {
         id: 'MOD-1',
         title: 'Module 1: The Digital Foundation',
-        description: 'The source of truth. Understanding the MyArk™ ecosystem and the Chain of Custody.',
+        description: 'The source of truth. Understanding the PROVENIQ Home ecosystem and the Chain of Custody.',
         lessons: [
             {
                 id: 'L1-1',
@@ -289,16 +289,16 @@ const TRAINING_MODULES: Module[] = [
                     <div className="space-y-6 text-gray-800">
                         <div className="bg-gradient-to-r from-brand-primary to-brand-secondary p-6 rounded-xl text-white shadow-lg mb-8">
                             <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-                                <MobilePhoneIcon className="h-6 w-6 text-brand-accent" /> Why MyArk™ Matters
+                                <MobilePhoneIcon className="h-6 w-6 text-brand-accent" /> Why PROVENIQ Home Matters
                             </h3>
                             <p className="text-blue-100 text-sm leading-relaxed">
-                                TrueManifest™ is powered by <strong>MyArk™</strong>, a consumer inventory app that allows policyholders to scan and log items <em>before</em> a loss occurs. This creates a "Golden Record" of truth that is virtually impossible to fake.
+                                TrueManifest™ is powered by <strong>PROVENIQ Home</strong>, a consumer inventory app that allows policyholders to scan and log items <em>before</em> a loss occurs. This creates a "Golden Record" of truth that is virtually impossible to fake.
                             </p>
                         </div>
 
                         <h3 className="text-lg font-bold text-neutral-dark mb-4">Garbage In, Garbage Out</h3>
                         <p className="text-gray-700 mb-6">
-                            Claims handling fails when the input data is bad. Memory bias makes policyholders unreliable narrators. "I think I paid $2,000" is usually wrong. MyArk replaces memory with data.
+                            Claims handling fails when the input data is bad. Memory bias makes policyholders unreliable narrators. "I think I paid $2,000" is usually wrong. PROVENIQ Home replaces memory with data.
                         </p>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -314,7 +314,7 @@ const TRAINING_MODULES: Module[] = [
                             />
                             <ConceptFlashcard 
                                 title="Geo-Verified"
-                                content="Photos taken in MyArk are stamped with GPS and Time. We know the item existed in the house."
+                                content="Photos taken in PROVENIQ Home are stamped with GPS and Time. We know the item existed in the house."
                                 icon={<MapPinIcon className="h-6 w-6" />}
                             />
                         </div>
@@ -383,7 +383,7 @@ const TRAINING_MODULES: Module[] = [
                         <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mt-6">
                             <strong className="text-green-900 block mb-1">The "Pre-Loss" Badge</strong>
                             <p className="text-sm text-green-800">
-                                When you see the <strong>Pre-Loss Verified</strong> badge in the dashboard, it means the item was logged in MyArk *before* the date of loss. This is the highest trust level in the system and allows for "Straight-Through Processing" (Instant Payment).
+                                When you see the <strong>Pre-Loss Verified</strong> badge in the dashboard, it means the item was logged in PROVENIQ Home *before* the date of loss. This is the highest trust level in the system and allows for "Straight-Through Processing" (Instant Payment).
                             </p>
                         </div>
                         <ComparisonGrid 
@@ -429,17 +429,17 @@ const TRAINING_MODULES: Module[] = [
                                 The biggest headache for adjusters is playing "Data Detective."
                             </p>
                             <p className="text-indigo-800 text-sm leading-relaxed">
-                                Chasing receipts, arguing about model numbers, and manually typing lines into Excel kills 40% of your day. It forces you to be a bureaucrat instead of an advocate. MyArk is a <strong>Pre-Adjudication Engine</strong> that handles the boring stuff automatically so you can focus on the human side of the loss.
+                                Chasing receipts, arguing about model numbers, and manually typing lines into Excel kills 40% of your day. It forces you to be a bureaucrat instead of an advocate. PROVENIQ Home is a <strong>Pre-Adjudication Engine</strong> that handles the boring stuff automatically so you can focus on the human side of the loss.
                             </p>
                         </div>
 
                         <h3 className="text-lg font-bold text-neutral-dark mt-6">Killing the "Back and Forth"</h3>
                         <p className="text-gray-700">
-                            Without MyArk, an adjuster sends an email asking for "Proof of Ownership." The user replies 3 days later with a blurry photo. The adjuster asks for a serial number. The user gets angry. This cycle repeats for weeks.
+                            Without PROVENIQ Home, an adjuster sends an email asking for "Proof of Ownership." The user replies 3 days later with a blurry photo. The adjuster asks for a serial number. The user gets angry. This cycle repeats for weeks.
                         </p>
                         <ComparisonGrid 
                             oldWay="Adjuster spends 4 hours over 2 weeks emailing the user to get a single receipt for a TV. Customer satisfaction plummets."
-                            newWay="MyArk exports the 'Verified' JSON payload instantly. The TV model, Serial, Receipt, and Purchase Date are already there. You pay it in 5 seconds."
+                            newWay="PROVENIQ Home exports the 'Verified' JSON payload instantly. The TV model, Serial, Receipt, and Purchase Date are already there. You pay it in 5 seconds."
                         />
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -450,7 +450,7 @@ const TRAINING_MODULES: Module[] = [
                             />
                             <ConceptFlashcard 
                                 title="Pre-Claim Buffer"
-                                content="MyArk acts as a shield. It forces users to organize their data *before* it hits your desk. You never receive a messy, unorganized claim again."
+                                content="PROVENIQ Home acts as a shield. It forces users to organize their data *before* it hits your desk. You never receive a messy, unorganized claim again."
                                 icon={<ShieldCheckIcon className="h-6 w-6" />}
                             />
                         </div>
@@ -459,7 +459,7 @@ const TRAINING_MODULES: Module[] = [
             }
         ],
         quiz: [
-            { id: 'Q1-1', text: "What is the primary benefit of 'Pre-Loss' verification in MyArk™?", options: ["It files the claim for you.", "It guarantees full RCV payout.", "It establishes a verifiable 'Golden Record' of ownership.", "It calculates depreciation automatically."], correctAnswerIndex: 2, explanation: "Pre-loss verification provides irrefutable proof that an item existed and was owned before the date of loss." },
+            { id: 'Q1-1', text: "What is the primary benefit of 'Pre-Loss' verification in PROVENIQ Home?", options: ["It files the claim for you.", "It guarantees full RCV payout.", "It establishes a verifiable 'Golden Record' of ownership.", "It calculates depreciation automatically."], correctAnswerIndex: 2, explanation: "Pre-loss verification provides irrefutable proof that an item existed and was owned before the date of loss." },
             { id: 'Q1-2', text: "How does the system retrieve exact item specifications?", options: ["From the user's manual description.", "By guessing based on the price.", "From the manufacturer's website.", "Via Barcode/SKU scan connected to GS1."], correctAnswerIndex: 3, explanation: "Scanning a UPC/Barcode pulls exact GS1 data, preventing ambiguity about model numbers." },
             { id: 'Q1-3', text: "Why are human memories termed 'Unreliable Narrators'?", options: ["Cognitive bias leads to inflating value and confusing purchase dates.", "They don't keep receipts.", "It's hard to remember colors.", "People usually lie."], correctAnswerIndex: 0, explanation: "Psychological studies show people overestimate the quality and value of lost items." },
             { id: 'Q1-4', text: "Which metadata element verifies the location of an item?", options: ["GPS Coordinates (EXIF)", "File Size", "Shutter Speed", "ISO Level"], correctAnswerIndex: 0, explanation: "GPS coordinates embedded in the photo metadata prove the item was physically at the insured location." },
@@ -467,18 +467,18 @@ const TRAINING_MODULES: Module[] = [
             { id: 'Q1-6', text: "What is a SHA-256 Hash used for?", options: ["Encrypting emails.", "Creating a unique digital fingerprint to detect file tampering.", "Compressing images.", "Calculating depreciation."], correctAnswerIndex: 1, explanation: "A hash ensures that if a file is altered even by one bit, the system detects it." },
             { id: 'Q1-7', text: "What is the 'Golden Record'?", options: ["Data verified Pre-Loss.", "The highest value item.", "The police report.", "The settlement check."], correctAnswerIndex: 0, explanation: "Data verified before a loss occurs is the most trustworthy source of truth." },
             { id: 'Q1-8', text: "Why is manual entry of items discouraged?", options: ["It's too slow.", "It requires internet.", "It lacks the data richness of a barcode scan.", "It costs more."], correctAnswerIndex: 2, explanation: "Manual entry leads to vague descriptions like 'TV' instead of 'Sony X90J 65-inch'." },
-            { id: 'Q1-9', text: "How does MyArk reduce friction during a claim?", options: ["By automatically denying claims.", "By eliminating the need for the adjuster to ask for proof of ownership repeatedly.", "By hiding the deductible.", "By increasing premiums."], correctAnswerIndex: 1, explanation: "Pre-loaded proof eliminates the painful 'back-and-forth' email chain." },
-            { id: 'Q1-10', text: "What is the 'Cycle Time' benefit of MyArk data?", options: ["It adds a 30-day waiting period.", "It requires more reviews.", "It allows for Straight-Through Processing, reducing settlement time by days.", "It makes the cycle longer."], correctAnswerIndex: 2, explanation: "Clean data allows for instant, automated decision making (STP)." },
+            { id: 'Q1-9', text: "How does PROVENIQ Home reduce friction during a claim?", options: ["By automatically denying claims.", "By eliminating the need for the adjuster to ask for proof of ownership repeatedly.", "By hiding the deductible.", "By increasing premiums."], correctAnswerIndex: 1, explanation: "Pre-loaded proof eliminates the painful 'back-and-forth' email chain." },
+            { id: 'Q1-10', text: "What is the 'Cycle Time' benefit of PROVENIQ Home data?", options: ["It adds a 30-day waiting period.", "It requires more reviews.", "It allows for Straight-Through Processing, reducing settlement time by days.", "It makes the cycle longer."], correctAnswerIndex: 2, explanation: "Clean data allows for instant, automated decision making (STP)." },
             { id: 'Q1-11', text: "Which tab in the Claims Workstation is used to log a phone call with the policyholder?", options: ["Manifest", "Activities", "Financials", "Notes / Diary"], correctAnswerIndex: 3, explanation: "The Notes/Diary tab is the official record for all communications and observations." },
             { id: 'Q1-12', text: "Why is 'Memory Bias' a headache for adjusters?", options: ["It increases premiums.", "It causes computer errors.", "It leads to disputes when the policyholder honestly believes an item was better/newer than it was.", "Adjusters have bad memories."], correctAnswerIndex: 2, explanation: "Honest but mistaken customers are the hardest to negotiate with. Data removes the emotion." },
-            { id: 'Q1-13', text: "What is 'Straight-Through Processing' (STP) mean in this context?", options: ["Automating the claim approval without human intervention based on high-trust data.", "Sending the claim to a human.", "Denying the claim instantly.", "Printing the claim."], correctAnswerIndex: 0, explanation: "STP relies on high-trust data (MyArk) to skip manual review." },
-            { id: 'Q1-14', text: "How does MyArk help with 'Like Kind and Quality' (LKQ) disputes?", options: ["It ignores quality.", "It forces the user to buy a specific brand.", "It provides the original specs, so the LKQ comparison is mathematically accurate.", "It doesn't."], correctAnswerIndex: 2, explanation: "You can't dispute the specs of a barcode scan. The comparison becomes objective." },
+            { id: 'Q1-13', text: "What is 'Straight-Through Processing' (STP) mean in this context?", options: ["Automating the claim approval without human intervention based on high-trust data.", "Sending the claim to a human.", "Denying the claim instantly.", "Printing the claim."], correctAnswerIndex: 0, explanation: "STP relies on high-trust data (PROVENIQ Home) to skip manual review." },
+            { id: 'Q1-14', text: "How does PROVENIQ Home help with 'Like Kind and Quality' (LKQ) disputes?", options: ["It ignores quality.", "It forces the user to buy a specific brand.", "It provides the original specs, so the LKQ comparison is mathematically accurate.", "It doesn't."], correctAnswerIndex: 2, explanation: "You can't dispute the specs of a barcode scan. The comparison becomes objective." },
             { id: 'Q1-15', text: "What happens if a user tries to edit a receipt after uploading it?", options: ["The file deletes itself.", "The user gets a refund.", "The digital fingerprint (Hash) changes, and the system flags the file as manipulated.", "Nothing."], correctAnswerIndex: 2, explanation: "Hashing ensures data integrity and chain of custody." },
-            { id: 'Q1-16', text: "How does MyArk act as a 'Pre-Claim Buffer'?", options: ["It forces users to organize data before the claim hits your desk.", "It makes users wait.", "It deletes claims.", "It creates more work."], correctAnswerIndex: 0, explanation: "Adjusters receive a clean package, not a mess of unorganized data." },
-            { id: 'Q1-17', text: "MyArk integrates with which database for product specs?", options: ["GS1 Global Registry.", "Wikipedia.", "Amazon.", "eBay."], correctAnswerIndex: 0, explanation: "GS1 is the global standard for barcode data." },
+            { id: 'Q1-16', text: "How does PROVENIQ Home act as a 'Pre-Claim Buffer'?", options: ["It forces users to organize data before the claim hits your desk.", "It makes users wait.", "It deletes claims.", "It creates more work."], correctAnswerIndex: 0, explanation: "Adjusters receive a clean package, not a mess of unorganized data." },
+            { id: 'Q1-17', text: "PROVENIQ Home integrates with which database for product specs?", options: ["GS1 Global Registry.", "Wikipedia.", "Amazon.", "eBay."], correctAnswerIndex: 0, explanation: "GS1 is the global standard for barcode data." },
             { id: 'Q1-18', text: "What is the purpose of the 'Activities' tab?", options: ["To view asset photos.", "To set financial reserves.", "To manage and track claim-related tasks.", "To write diary entries."], correctAnswerIndex: 2, explanation: "Activities are the to-do list for the claim, ensuring all necessary steps are completed." },
             { id: 'Q1-19', text: "What is the 'Pre-Adjudication Engine' do?", options: ["It pays the claim.", "It denies the claim.", "It prints the claim.", "It validates data before the adjuster sees it."], correctAnswerIndex: 3, explanation: "It handles the verification steps automatically." },
-            { id: 'Q1-20', text: "What is the result of shifting workload to the user via MyArk?", options: ["Adjusters have less administrative work.", "Users are unhappy.", "Claims take longer.", "Leakage increases."], correctAnswerIndex: 0, explanation: "Empowering the user reduces the administrative burden on the carrier." }
+            { id: 'Q1-20', text: "What is the result of shifting workload to the user via PROVENIQ Home?", options: ["Adjusters have less administrative work.", "Users are unhappy.", "Claims take longer.", "Leakage increases."], correctAnswerIndex: 0, explanation: "Empowering the user reduces the administrative burden on the carrier." }
         ]
     },
     {
@@ -939,7 +939,7 @@ const TRAINING_MODULES: Module[] = [
                     <div className="space-y-6 text-gray-800">
                         <h3 className="text-xl font-bold text-neutral-dark">Preventing the Claim</h3>
                         <p className="text-gray-700">
-                            The best claim is the one that never happens. By aggregating data from millions of MyArk inventories, we identify widespread risks—like a specific brand of toaster that catches fire, or recalled rubber washing machine hoses.
+                            The best claim is the one that never happens. By aggregating data from millions of PROVENIQ Home inventories, we identify widespread risks—like a specific brand of toaster that catches fire, or recalled rubber washing machine hoses.
                         </p>
                         <InteractiveCaseStudy caseId="133" />
                         <p className="text-gray-700">
@@ -1000,7 +1000,7 @@ const TRAINING_MODULES: Module[] = [
             
             // Next Gen
             { id: 'FE-26', text: "Live FNOL uses AI to...", options: ["Pay claims instantly.", "Transcribe voice calls and extract key entities.", "Generate photos.", "Create policy documents."], correctAnswerIndex: 1, explanation: "Real-time transcription aids data entry." },
-            { id: 'FE-27', text: "The Proactive Risk Shield relies on data from...", options: ["The Weather Channel.", "Social Media.", "MyArk user inventories.", "The Police."], correctAnswerIndex: 2, explanation: "Aggregated inventory data reveals widespread product risks." },
+            { id: 'FE-27', text: "The Proactive Risk Shield relies on data from...", options: ["The Weather Channel.", "Social Media.", "PROVENIQ Home user inventories.", "The Police."], correctAnswerIndex: 2, explanation: "Aggregated inventory data reveals widespread product risks." },
             { id: 'FE-28', text: "A video of a scratched floor should be routed to...", options: ["A Structural Engineer.", "The Digital Field Adjuster (Video Triage).", "A Lawyer.", "The CEO."], correctAnswerIndex: 1, explanation: "Video analysis is perfect for surface damage assessment." },
             { id: 'FE-29', text: "What is a 'Mitigation Campaign'?", options: ["Marketing emails.", "Proactive alerts to users to fix risks before they fail.", "Political ads.", "Employee training."], correctAnswerIndex: 1, explanation: "Preventing claims by alerting users to known risks." },
             { id: 'FE-30', text: "Does Digital Field Adjuster require a site visit?", options: ["Yes.", "Only for fires.", "Sometimes.", "No, it uses user-generated video."], correctAnswerIndex: 3, explanation: "It is designed to eliminate the need for physical inspection of minor damage." },
@@ -1012,7 +1012,7 @@ const TRAINING_MODULES: Module[] = [
             { id: 'FE-34', text: "What does the 'Repairability Index' from the Digital Field Adjuster signify?", options: ["How much the repair will cost.", "A score indicating the likelihood a repair will be successful.", "How long the repair will take.", "The age of the item."], correctAnswerIndex: 1, explanation: "A high repairability index (e.g., 95%) suggests a simple, cost-effective repair is feasible and replacement is likely unnecessary." },
             { id: 'FE-35', text: "Which Workstation tab would you use to set the initial reserve for a claim?", options: ["Financials Tab", "Notes Tab", "Activities Tab", "Manifest Tab"], correctAnswerIndex: 0, explanation: "The Financials tab is the central hub for managing all monetary aspects of the claim, including reserves and payments." },
             
-            { id: 'FE-36', text: "What is the key benefit of MyArk for the adjuster?", options: ["It reduces administrative friction.", "It increases emails.", "It hides data.", "It costs more."], correctAnswerIndex: 0, explanation: "It removes the need to chase documents." },
+            { id: 'FE-36', text: "What is the key benefit of PROVENIQ Home for the adjuster?", options: ["It reduces administrative friction.", "It increases emails.", "It hides data.", "It costs more."], correctAnswerIndex: 0, explanation: "It removes the need to chase documents." },
             { id: 'FE-37', text: "If a user claims $10k jewelry with no receipts and no photos, what should you do?", options: ["Pay it.", "Deny it.", "Ask for 'wearing photos' from social media history.", "Call the police."], correctAnswerIndex: 2, explanation: "Find alternative forensic evidence of possession." },
             { id: 'FE-38', text: "Can AI detect if a crack on a TV screen is fake?", options: ["No.", "Yes, via pixel noise analysis (Visual Truth).", "Sometimes.", "Only if it's large."], correctAnswerIndex: 1, explanation: "Generative AI leaves pixel artifacts that forensic tools can spot." },
             { id: 'FE-39', text: "What is the best way to handle a vague 'Home Gym' claim?", options: ["Pay the estimated value.", "Use Bundle Breakout to estimate components.", "Deny it.", "Ignore it."], correctAnswerIndex: 1, explanation: "Break it down into line items to check pricing." },
