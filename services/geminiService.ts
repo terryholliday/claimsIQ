@@ -87,7 +87,7 @@ const cleanJsonOutput = (text: string): string => {
 // --- NEW "WORKFLOW" FEATURE ---
 export const generateClaimSummary = async (claim: Claim): Promise<ClaimSummary | null> => {
     const prompt = `
-      You are an expert Senior Claims Adjuster AI for a system called TrueManifest. Your task is to provide an immediate, high-level briefing for a human adjuster opening this claim file for the first time.
+      You are an expert Senior Claims Adjuster AI for a system called PROVENIQ ClaimsIQ. Your task is to provide an immediate, high-level briefing for a human adjuster opening this claim file for the first time.
       
       Analyze the provided claim JSON data. Identify the most critical information and present it as a concise summary.
       
@@ -154,7 +154,7 @@ export const runLiveFNOL = async (
     onUpdate({ status: 'active' });
 
     const script: LiveFNOLTranscriptEntry[] = [
-        { speaker: 'AI', text: `Hello ${claim.policyholderName}, this is the TrueManifest AI assistant calling to document your claim. This call is recorded. Can you please state your full name and the date of the loss?` },
+        { speaker: 'AI', text: `Hello ${claim.policyholderName}, this is the ClaimsIQ AI assistant calling to document your claim. This call is recorded. Can you please state your full name and the date of the loss?` },
         { speaker: 'Policyholder', text: `Yes, this is ${claim.policyholderName}, and the loss was... Tuesday night.` },
         { speaker: 'AI', text: "Thank you. In your own words, can you describe what happened?" },
         { speaker: 'Policyholder', text: "The fire started in the garage. I think it started after I plugged in my new e-scooter to charge." },
@@ -269,7 +269,7 @@ export const analyzeAssetForFraud = async (asset: Asset): Promise<FraudAnalysis>
     - Purchase Date: ${asset.purchaseDate}
   `;
 
-    const prompt = `You are a senior insurance fraud detection expert for a system called TrueManifest. Your task is to analyze asset data from an insurance claim and identify potential fraud.
+    const prompt = `You are a senior insurance fraud detection expert for a system called PROVENIQ ClaimsIQ. Your task is to analyze asset data from an insurance claim and identify potential fraud.
 
   Analyze the following asset for inconsistencies. Consider these factors:
   - Is the claimed value reasonable for the item described?
@@ -390,7 +390,7 @@ export const analyzeMarketValue = async (asset: Asset): Promise<MarketValueAnaly
 // 1. Manifest Assistant Chat
 export const createManifestAssistant = (claim: Claim): Chat => {
     const systemInstruction = `
-    You are the "Manifest Assistant", an AI copilot for an insurance adjuster processing a claim on the TrueManifest portal.
+    You are the "Manifest Assistant", an AI copilot for an insurance adjuster processing a claim on the PROVENIQ ClaimsIQ portal.
     
     Here is the full context of the claim you are looking at:
     ${JSON.stringify(claim, null, 2)}
@@ -1154,7 +1154,7 @@ export const generateComplianceFiling = async (claim: Claim, regulation: StateRe
         1. HEADER: [State Name] Department of Insurance - Market Conduct Division
         2. SUBHEADER: CERTIFICATE OF COMPLIANCE
         3. TO: Commissioner of Insurance
-        4. FROM: TrueManifest Regulatory Engine
+        4. FROM: PROVENIQ ClaimsIQ Regulatory Engine
         5. RE: Compliance Audit for Claim #${claim.id}
         6. BODY: A formal legal statement certifying that the claim handling was audited and found to be in full compliance with the cited regulation.
         7. LIST: A bulleted list of verified compliance points (e.g., "Timely Acknowledgement", "Investigation Standards", "Fair Valuation").

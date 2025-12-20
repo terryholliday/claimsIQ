@@ -34,7 +34,7 @@ export const MOCK_CLAIMS: Claim[] = [
         auditTrail: [
             { id: 'log_1', timestamp: '2024-07-15T10:00:00Z', user: 'System', action: 'CLAIM_CREATED', details: 'Ingested from PROVENIQ Home', hash: 'a1b2c3d4' },
             { id: 'log_2', timestamp: '2024-07-15T10:05:22Z', user: 'Alex Johnson', action: 'VIEWED_MANIFEST', details: 'Adjuster opened file', hash: 'e5f6g7h8' },
-            { id: 'log_3', timestamp: '2024-07-15T10:12:45Z', user: 'TrueManifest AI', action: 'FRAUD_SCAN', details: 'Routine Scan: No anomalies detected', hash: 'i9j0k1l2' },
+            { id: 'log_3', timestamp: '2024-07-15T10:12:45Z', user: 'ClaimsIQ AI', action: 'FRAUD_SCAN', details: 'Routine Scan: No anomalies detected', hash: 'i9j0k1l2' },
             { id: 'log_4', timestamp: '2024-07-15T10:20:00Z', user: 'Alex Johnson', action: 'STATUS_CHANGE', details: 'Changed from NEW to IN_REVIEW', hash: 'm3n4o5p6' }
         ],
         financials: {
@@ -207,7 +207,7 @@ export const MOCK_CLAIMS: Claim[] = [
         touchTime: 7200000, // 2 hours
         auditTrail: [
             { id: 'log_1', timestamp: '2024-07-16T08:00:00Z', user: 'System', action: 'CLAIM_CREATED', details: 'Ingested', hash: 'u8i9o0' },
-            { id: 'log_2', timestamp: '2024-07-16T08:01:00Z', user: 'TrueManifest AI', action: 'AUTO_FLAG', details: 'Timeline Anomaly Detected', hash: 'p1a2s3' }
+            { id: 'log_2', timestamp: '2024-07-16T08:01:00Z', user: 'ClaimsIQ AI', action: 'AUTO_FLAG', details: 'Timeline Anomaly Detected', hash: 'p1a2s3' }
         ],
         financials: {
             reserves: 10000, // Capped at coverage limit

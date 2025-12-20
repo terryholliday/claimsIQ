@@ -66,7 +66,7 @@ const ROICalculator: React.FC = () => {
                 </div>
                 <div>
                     <h3 className="text-2xl font-bold">ROI Calculator</h3>
-                    <p className="text-gray-400 text-sm">Estimate your annual savings with TrueManifest™</p>
+                    <p className="text-gray-400 text-sm">Estimate your annual savings with ClaimsIQ</p>
                 </div>
             </div>
 
@@ -169,7 +169,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
           Replacing "Guesstimates" with <span className="text-brand-primary">Asset Intelligence</span>
         </h1>
         <p className="text-lg text-gray-600 leading-relaxed">
-          TrueManifest™ isn't just a dashboard—it's an AI-powered middleware that sits between your policyholders and your core claims system, automating the 30% of adjuster time spent on manual validation.
+          PROVENIQ ClaimsIQ isn't just a dashboard—it's an AI-powered middleware that sits between your policyholders and your core claims system, automating the 30% of adjuster time spent on manual validation.
         </p>
       </div>
 
@@ -182,7 +182,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
             </div>
             <h2 className="text-3xl font-bold text-neutral-dark">The Fraud Defense Grid</h2>
             <p className="mt-4 text-lg text-gray-600 leading-relaxed">
-            TrueManifest™ doesn't rely on simple checklists. We run <strong>six concurrent AI engines</strong> to triangulate truth across pixels, metadata, pricing, and weather history.
+            ClaimsIQ doesn't rely on simple checklists. We run <strong>six concurrent AI engines</strong> to triangulate truth across pixels, metadata, pricing, and weather history.
             </p>
         </div>
 
@@ -493,7 +493,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
               </div>
               <div className="space-y-6">
                   <p className="text-gray-600 text-sm">
-                      TrueManifest™ is designed as an API-first middleware. We ingest data from PROVENIQ Home, process it, and push clean, structured JSON payloads directly into your core claims system via REST API.
+                      ClaimsIQ is designed as an API-first middleware. We ingest data from PROVENIQ Home, process it, and push clean, structured JSON payloads directly into your core claims system via REST API.
                   </p>
                   <div className="flex flex-wrap gap-4">
                       <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-700 font-bold text-sm border border-gray-200">Guidewire ClaimCenter</div>

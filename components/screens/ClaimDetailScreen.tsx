@@ -332,7 +332,7 @@ const AIClaimBriefing: React.FC<{
         const newNote: ClaimNote = {
             id: `note-ai-${Date.now()}`,
             timestamp: new Date().toISOString(),
-            author: 'TrueManifest AI',
+            author: 'ClaimsIQ AI',
             content: `Suggested task added from AI Action Plan.\n\nReasoning: "${action.reasoning}"`,
             type: 'log',
         };
@@ -370,7 +370,7 @@ const AIClaimBriefing: React.FC<{
             newNotes.push({
                 id: `note-ai-${timestamp}`,
                 timestamp: new Date().toISOString(),
-                author: 'TrueManifest AI',
+                author: 'ClaimsIQ AI',
                 content: `Suggested task added from AI Action Plan.\n\nReasoning: "${action.reasoning}"`,
                 type: 'log',
             });

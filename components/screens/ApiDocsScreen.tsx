@@ -13,7 +13,7 @@ const ApiDocsScreen: React.FC = () => {
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-neutral-dark">API Documentation</h1>
-        <p className="mt-2 text-lg text-gray-600">Technical reference for integrating with the TrueManifest API.</p>
+        <p className="mt-2 text-lg text-gray-600">Technical reference for integrating with the PROVENIQ ClaimsIQ API.</p>
       </div>
 
       <Card>

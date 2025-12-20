@@ -162,8 +162,8 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateH
             <header className="py-6 px-4 md:px-8 max-w-7xl mx-auto flex justify-between items-center relative z-20">
                 <div className="flex items-center gap-2">
                     <div className="font-black text-xl tracking-tighter">
-                        <span className="text-brand-accent">TRUE</span>
-                        <span className="text-white">MANIFEST</span>
+                        <span className="text-brand-accent">PROVENIQ</span>
+                        <span className="text-white"> ClaimsIQ</span>
                     </div>
                 </div>
 
