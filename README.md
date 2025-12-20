@@ -1,20 +1,61 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# PROVENIQ ClaimsIQ
 
-# Run and deploy your AI Studio app
+**AI-Powered Claims Adjudication Engine**
 
-This contains everything you need to run your app locally.
+ClaimsIQ receives claims from ecosystem apps, processes them through a decision engine, and issues PAY/DENY verdicts with cryptographic audit seals.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1-7PYOrwybNaZpvghi1HvJ1mBCdNapB8W
+## Architecture
 
-## Run Locally
+```
+Properties ──┐
+             ├──► ClaimsIQ ──► Capital (PAY → Payout)
+Ops ─────────┘      │
+Home ────────────────┘
+```
 
-**Prerequisites:**  Node.js
+## Tech Stack
 
+- **Runtime:** Node.js + TypeScript
+- **Framework:** Express
+- **Database:** PostgreSQL (Kysely ORM)
+- **AI:** Google Gemini (via Genkit)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /v1/claimsiq/claims/deposit | Deposit dispute from Properties |
+| POST | /v1/claimsiq/claims/shrinkage | Shrinkage claim from Ops |
+| POST | /v1/claimsiq/claims | General claim submission |
+| GET | /v1/claimsiq/claims/:id/status | Get claim status |
+
+## Decision Engine
+
+5-gate validation flow:
+1. **Evidence Gate** - Score evidence quality
+2. **Amount Gate** - Validate claim amount
+3. **Fraud Gate** - Check fraud signals
+4. **Type Gate** - Apply claim-type rules
+5. **Approval Gate** - Calculate approved amount
+
+Outputs: `PAY` | `DENY` | `REVIEW`
+
+## Quick Start
+
+```bash
+npm install
+cp .env.local.example .env.local
+# Set GEMINI_API_KEY, DATABASE_URL
+npm run dev
+```
+
+## Ecosystem Integration
+
+- **Properties**: Receives deposit disputes on claim packet generation
+- **Ops**: Receives shrinkage claims from Bishop
+- **Home**: Receives insurance/warranty claims
+- **Capital**: Sends PAY decisions via webhook
+
+## License
+
+Proprietary - PROVENIQ Technologies
