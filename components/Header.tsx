@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
     <header className="bg-white h-16 flex items-center justify-between px-8 border-b border-neutral-medium relative z-30">
       <div>
         <h2 className="text-xl font-semibold text-neutral-dark">Asset Intelligence Portal</h2>
-        <p className="text-sm text-gray-500">Incoming Manifests from PROVENIQ Home</p>
+        <p className="text-sm text-gray-500">Incoming Claims from PROVENIQ Home</p>
       </div>
       <div className="flex items-center space-x-6">
         

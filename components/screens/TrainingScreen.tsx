@@ -528,7 +528,7 @@ const TRAINING_MODULES: Module[] = [
                             <ClockIcon className="h-8 w-8 text-yellow-600" />
                             <div>
                                 <strong>💎 Pro Tip: "Touch Time"</strong><br/>
-                                TrueManifest™ tracks how long you spend in each file. Do not open a claim unless you intend to move it forward. Opening a file and closing it without action lowers your efficiency score. Every "touch" costs the carrier roughly $15 in administrative time.
+                                ClaimsIQ tracks how long you spend in each file. Do not open a claim unless you intend to move it forward. Opening a file and closing it without action lowers your efficiency score. Every "touch" costs the carrier roughly $15 in administrative time.
                             </div>
                         </div>
                         <p className="text-gray-700">
@@ -1062,7 +1062,7 @@ const CertificateView: React.FC = () => {
                     </div>
                 </div>
                 <div className="absolute bottom-4 right-4 flex items-center gap-2 text-xs text-gray-400">
-                    TrueManifest™ Academy
+                    ClaimsIQ Academy
                 </div>
             </div>
              <div className="mt-8 flex gap-4">
@@ -1284,7 +1284,7 @@ const TrainingScreen: React.FC = () => {
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <AcademicCapIcon className="h-8 w-8 text-brand-accent" />
-                            <h1 className="text-3xl font-bold tracking-tight">TrueManifest™ Academy</h1>
+                            <h1 className="text-3xl font-bold tracking-tight">ClaimsIQ Academy</h1>
                         </div>
                         <p className="text-blue-100 max-w-xl text-lg">
                             Master the Asset Intelligence Portal. Complete all modules to earn your Certified Specialist credentials.
@@ -1586,7 +1586,7 @@ const TrainingScreen: React.FC = () => {
                                         </button>
                                     </div>
                                     <div className="flex justify-between w-full text-xs text-gray-400 mt-2">
-                                        <span>TrueManifest™ Academy v3.0</span>
+                                        <span>ClaimsIQ Academy v3.0</span>
                                         <span>{activeModule.title}</span>
                                     </div>
                                 </div>
