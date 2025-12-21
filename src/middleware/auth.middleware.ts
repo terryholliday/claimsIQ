@@ -3,12 +3,13 @@
  * @description Authentication Middleware for ClaimsIQ
  * 
  * Implements DNA Contract requirements:
- * - JWT validation
+ * - Token validation (Firebase preferred, fallback dev token)
  * - X-Service-Name header check
  * - X-Correlation-Id propagation
  */
 
 import { Request, Response, NextFunction } from 'express';
+import admin from 'firebase-admin';
 
 export interface ServiceAuthContext {
     readonly serviceName: string;
@@ -35,6 +36,16 @@ const ALLOWED_SERVICES = [
     'proveniq-claimsiq',
 ];
 
+// Initialize Firebase Admin if credentials are available
+const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
+if (!admin.apps.length && FIREBASE_PROJECT_ID) {
+    admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+        projectId: FIREBASE_PROJECT_ID,
+    });
+}
+const firebaseAuth = admin.apps.length ? admin.auth() : null;
+
 // Service permissions matrix
 const SERVICE_PERMISSIONS: Record<string, string[]> = {
     'proveniq-home': ['read:provenance', 'write:claims'],
@@ -46,18 +57,30 @@ const SERVICE_PERMISSIONS: Record<string, string[]> = {
 };
 
 /**
- * Validate JWT token (mock implementation)
- * Production: Use actual JWT library (jsonwebtoken, jose)
+ * Validate token
+ * Preferred: Firebase ID token
+ * Fallback: mock dev token
  */
-function validateJwt(token: string): { valid: boolean; serviceName?: string; walletId?: string } {
-    // Mock validation - accept any Bearer token for development
-    // Production: Verify signature, expiration, issuer, audience
-    
+async function validateToken(token: string): Promise<{ valid: boolean; serviceName?: string; walletId?: string; claims?: any }> {
+    // Preferred: Firebase
+    if (firebaseAuth) {
+        try {
+            const decoded = await firebaseAuth.verifyIdToken(token);
+            return {
+                valid: true,
+                serviceName: decoded.aud || 'proveniq-claimsiq',
+                walletId: decoded.uid,
+                claims: decoded,
+            };
+        } catch (err) {
+            // fall through to dev token
+        }
+    }
+
+    // Dev fallback: mock token "service_<name>_<random>"
     if (!token || token.length < 10) {
         return { valid: false };
     }
-
-    // Extract service name from mock token format: "service_<name>_<random>"
     const parts = token.split('_');
     if (parts.length >= 2 && parts[0] === 'service') {
         return {
@@ -66,7 +89,7 @@ function validateJwt(token: string): { valid: boolean; serviceName?: string; wal
         };
     }
 
-    // Accept any token in development mode
+    // Allow any token in non-production as last resort
     if (process.env.NODE_ENV !== 'production') {
         return { valid: true, serviceName: 'proveniq-claimsiq' };
     }
@@ -81,56 +104,58 @@ export function serviceAuthMiddleware(req: Request, res: Response, next: NextFun
     // 1. Extract Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        // Allow unauthenticated requests in development
+        // Allow unauthenticated in dev
         if (process.env.NODE_ENV !== 'production') {
             req.serviceAuth = {
                 serviceName: 'anonymous',
-                correlationId: req.headers['x-correlation-id'] as string || `corr_${Date.now()}`,
-                permissions: ['read:provenance', 'write:claims'], // Default dev permissions
+                correlationId: (req.headers['x-correlation-id'] as string) || `corr_${Date.now()}`,
+                permissions: ['read:provenance', 'write:claims'],
             };
-            next();
-            return;
+            return next();
         }
-
         res.status(401).json({ error: 'Missing Authorization header' });
         return;
     }
 
     const token = authHeader.substring(7); // Remove "Bearer "
 
-    // 2. Validate JWT
-    const jwtResult = validateJwt(token);
-    if (!jwtResult.valid) {
+    // 2. Validate token
+    validateToken(token).then((jwtResult) => {
+        if (!jwtResult.valid) {
+            res.status(401).json({ error: 'Invalid token' });
+            return;
+        }
+
+        // 3. Extract X-Service-Name header
+        const serviceName = (req.headers['x-service-name'] as string) || jwtResult.serviceName || 'unknown';
+        
+        if (!ALLOWED_SERVICES.includes(serviceName)) {
+            res.status(403).json({ error: `Unknown service: ${serviceName}` });
+            return;
+        }
+
+        // 4. Extract or generate X-Correlation-Id
+        const correlationId = (req.headers['x-correlation-id'] as string) || `corr_${Date.now()}`;
+
+        // 5. Get service permissions
+        const permissions = SERVICE_PERMISSIONS[serviceName] || [];
+
+        // 6. Attach auth context to request
+        req.serviceAuth = {
+            serviceName,
+            correlationId,
+            walletId: jwtResult.walletId,
+            permissions,
+        };
+
+        // 7. Log for audit
+        console.log(`[AUTH] Service: ${serviceName} | Correlation: ${correlationId} | Path: ${req.path}`);
+
+        next();
+    }).catch(err => {
+        console.error('[AUTH] token validation error', err);
         res.status(401).json({ error: 'Invalid token' });
-        return;
-    }
-
-    // 3. Extract X-Service-Name header
-    const serviceName = req.headers['x-service-name'] as string || jwtResult.serviceName || 'unknown';
-    
-    if (!ALLOWED_SERVICES.includes(serviceName)) {
-        res.status(403).json({ error: `Unknown service: ${serviceName}` });
-        return;
-    }
-
-    // 4. Extract or generate X-Correlation-Id
-    const correlationId = req.headers['x-correlation-id'] as string || `corr_${Date.now()}`;
-
-    // 5. Get service permissions
-    const permissions = SERVICE_PERMISSIONS[serviceName] || [];
-
-    // 6. Attach auth context to request
-    req.serviceAuth = {
-        serviceName,
-        correlationId,
-        walletId: jwtResult.walletId,
-        permissions,
-    };
-
-    // 7. Log for audit
-    console.log(`[AUTH] Service: ${serviceName} | Correlation: ${correlationId} | Path: ${req.path}`);
-
-    next();
+    });
 }
 
 /**
