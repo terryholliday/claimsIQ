@@ -22,7 +22,7 @@ export class ProvenanceController {
 
         console.log(`[PROVENANCE API] Getting pre-loss provenance for item ${itemId}`);
 
-        const result = this.provenanceService.getPreLossProvenance(itemId);
+        const result = await this.provenanceService.getPreLossProvenance(itemId);
 
         if (!result.success) {
             res.status(404).json({ error: 'Item not found' });

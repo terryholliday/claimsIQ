@@ -8,7 +8,7 @@
 
 import { createHash, randomUUID } from 'crypto';
 
-export type LedgerEventType = 
+export type LedgerEventType =
     | 'claim.created'
     | 'claim.settled'
     | 'salvage.created'
@@ -40,7 +40,7 @@ export class LedgerClient {
     private readonly writtenEvents: LedgerEvent[] = []; // For testing/audit
 
     constructor(baseUrl?: string) {
-        this.baseUrl = baseUrl || process.env.LEDGER_API_URL || 'http://localhost:3001';
+        this.baseUrl = baseUrl || process.env.LEDGER_API_URL || 'http://localhost:8006';
     }
 
     /**
@@ -56,47 +56,60 @@ export class LedgerClient {
     ): Promise<LedgerWriteResult> {
         const eventId = `evt_${randomUUID().substring(0, 12)}`;
         const corrId = correlationId || `corr_${randomUUID().substring(0, 8)}`;
+        const apiKey = process.env.LEDGER_API_KEY || 'default-execution-key';
 
-        const event: LedgerEvent = {
-            eventId,
-            eventType,
-            timestamp: new Date().toISOString(),
-            walletId,
-            itemId,
-            payload,
-            sourceApp: 'CLAIMSIQ',
-            correlationId: corrId,
+        const event = {
+            source: 'PROVENIQ_CLAIMSIQ', // Matches API expectation
+            event_type: eventType,
+            asset_id: itemId,
+            actor_id: walletId,
+            correlation_id: corrId,
+            payload: payload
         };
 
-        // Store for audit
-        this.writtenEvents.push(event);
+        console.log(`[LEDGER] POST ${this.baseUrl}/api/v1/events | Type: ${eventType}`);
 
-        // Generate mock hash (production: actual blockchain hash)
-        const hash = createHash('sha256')
-            .update(JSON.stringify(event))
-            .digest('hex');
+        try {
+            const response = await fetch(`${this.baseUrl}/api/v1/events`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                },
+                body: JSON.stringify(event),
+            });
 
-        console.log(`[LEDGER] POST /v1/ledger/events | Type: ${eventType} | Event: ${eventId}`);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Ledger write failed: ${response.status} ${errorText}`);
+            }
 
-        // In production:
-        // const response = await fetch(`${this.baseUrl}/v1/ledger/events`, {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'Authorization': `Bearer ${serviceJwt}`,
-        //         'X-Service-Name': 'proveniq-claimsiq',
-        //         'X-Correlation-Id': corrId,
-        //     },
-        //     body: JSON.stringify(event),
-        // });
-        // return response.json();
+            const data = await response.json();
 
-        return {
-            eventId,
-            blockNumber: this.writtenEvents.length,
-            hash,
-            timestamp: event.timestamp,
-        };
+            // Store for testing/audit if needed, but primary is remote
+            this.writtenEvents.push({
+                eventId: data.event_id,
+                eventType,
+                timestamp: data.created_at,
+                walletId,
+                itemId,
+                payload,
+                sourceApp: 'CLAIMSIQ',
+                correlationId: corrId
+            });
+
+            return {
+                eventId: data.event_id,
+                blockNumber: data.sequence_number,
+                hash: data.entry_hash,
+                timestamp: data.created_at,
+            };
+        } catch (error) {
+            console.error('[LEDGER] Write Error:', error);
+            // In a real system we might queue this for retry.
+            // For now, we propagate error to halt the claim if the ledger is unreachable (Strict Mode)
+            throw error;
+        }
     }
 
     /**
