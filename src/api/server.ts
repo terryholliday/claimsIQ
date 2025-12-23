@@ -38,6 +38,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.post('/v1/claimsiq/claims', claimsController.submitClaim);
 app.get('/v1/claimsiq/claims/:claimId/status', claimsController.getClaimStatus);
 app.post('/v1/claimsiq/claims/:claimId/events', claimsEventsController.recordEvent);
+app.get('/v1/claimsiq/claims/:claimId/attribution-packet', attributionController.generatePacket);
 
 // 3. Pre-Loss Provenance Endpoint (DNA Contract requirement)
 app.get('/v1/claimsiq/items/:itemId/preloss-provenance', provenanceController.getPreLossProvenance);

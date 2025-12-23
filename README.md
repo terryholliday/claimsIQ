@@ -31,31 +31,91 @@ Home ────────────────┘
 
 ## Decision Engine
 
-5-gate validation flow:
-1. **Evidence Gate** - Score evidence quality
-2. **Amount Gate** - Validate claim amount
-3. **Fraud Gate** - Check fraud signals
-4. **Type Gate** - Apply claim-type rules
-5. **Approval Gate** - Calculate approved amount
-
-Outputs: `PAY` | `DENY` | `REVIEW`
-
 ## Quick Start
 
 ```bash
 npm install
-cp .env.local.example .env.local
-# Set GEMINI_API_KEY, DATABASE_URL
 npm run dev
 ```
 
-## Ecosystem Integration
+## API Endpoints
 
-- **Properties**: Receives deposit disputes on claim packet generation
-- **Ops**: Receives shrinkage claims from Bishop
-- **Home**: Receives insurance/warranty claims
-- **Capital**: Sends PAY decisions via webhook
+### Claims
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/v1/claimsiq/claims` | Submit new claim |
+| `GET` | `/v1/claimsiq/claims/:id/status` | Get claim status |
+| `POST` | `/v1/claimsiq/claims/:id/events` | Record claim event |
+| `GET` | `/v1/claimsiq/claims/:id/attribution-packet` | Generate attribution packet |
+
+### Provenance
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/claimsiq/items/:id/preloss-provenance` | Get pre-loss evidence |
+
+### Salvage
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/v1/claimsiq/claims/:id/salvage` | Initiate salvage |
+| `GET` | `/v1/claimsiq/claims/:id/salvage` | Get claim salvage |
+| `POST` | `/v1/claimsiq/salvage/:id/list-on-bids` | List on Bids auction |
+| `GET` | `/v1/claimsiq/salvage/:id` | Get salvage manifest |
+
+### Inbound (from other apps)
+| Method | Endpoint | Source |
+|--------|----------|--------|
+| `POST` | `/v1/claimsiq/claims/shrinkage` | Ops (inventory loss) |
+| `POST` | `/v1/claimsiq/claims/deposit` | Properties (deposit disputes) |
+
+## Attribution Packet
+
+Comprehensive claim analysis bundle for adjusters:
+
+```typescript
+{
+  packetId: string,
+  claimId: string,
+  claimant: { id, name, policyNumber },
+  asset: { id, name, claimedValue, coreValuation },
+  preLossProvenance: { hasEvidence, evidenceCount, ledgerEventIds },
+  fraudAnalysis: { score, riskLevel, signals, recommendation },
+  ledgerTrail: { eventCount, events, chainIntegrity },
+  adjusterSummary: { confidenceScore, autoApprovalEligible, flags, recommendedAction }
+}
+```
+
+## Integrations
+
+| Service | Purpose |
+|---------|---------|
+| **Ledger (8006)** | Claim events, chain of custody |
+| **Core (8000)** | Fraud scoring, valuations, asset registry |
+| **Bids (3005)** | Salvage auction listings |
+| **Home (9003)** | Pre-loss evidence source |
+| **Properties (8001)** | Deposit dispute claims |
+| **Ops** | Shrinkage claims |
+
+## AI Analysis Flows
+
+- **Live FNOL Analysis** — Real-time call transcription
+- **Digital Field Adjuster** — Damage assessment from photos
+- **Market Value Analysis** — Fair market value research
+- **Fraud Detection** — Multi-signal risk scoring
+- **LKQ Analysis** — Like-kind-quality replacement
+- **Bundle Analysis** — Component breakdown
+- **Depreciation Calculation** — ACV computation
+
+## Environment Variables
+
+```env
+PORT=3005
+DATABASE_URL=postgresql://...
+LEDGER_API_URL=http://localhost:8006
+CORE_SERVICE_URL=http://localhost:8000
+GEMINI_API_KEY=...
+```
 
 ## License
 
+Proprietary — PROVENIQ Inc.
 Proprietary - PROVENIQ Technologies
