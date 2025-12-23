@@ -6,6 +6,7 @@
 import express, { Express, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import { ClaimsController } from './claims.controller';
+import { AttributionController } from './attribution.controller';
 import { SalvageController } from '../modules/salvage/salvage.controller';
 import { ProvenanceController } from '../modules/provenance/provenance.controller';
 import { ClaimsEventsController } from '../modules/claims/claims-events.controller';
@@ -22,6 +23,7 @@ app.use(serviceAuthMiddleware); // JWT + Service Header validation
 
 // Controllers
 const claimsController = new ClaimsController();
+const attributionController = new AttributionController();
 const salvageController = new SalvageController();
 const provenanceController = new ProvenanceController();
 const claimsEventsController = new ClaimsEventsController();
