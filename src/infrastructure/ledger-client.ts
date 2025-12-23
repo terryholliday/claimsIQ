@@ -3,29 +3,220 @@
  * @description Proveniq Ledger Client for ClaimsIQ
  * 
  * Writes claim lifecycle events to the immutable Ledger.
- * POST /v1/ledger/events
+ * POST /v1/ledger/events/canonical
+ * SCHEMA VERSION: 1.0.0 (LOCKED)
  */
 
 import { createHash, randomUUID } from 'crypto';
 
+// Canonical Event Types (Must match Ledger)
 export type LedgerEventType =
-    | 'claim.created'
-    | 'claim.settled'
-    | 'salvage.created'
-    | 'salvage.listed'
-    | 'salvage.recovered'
-    | 'custody.changed';
+    | 'CLAIM_INTAKE_RECEIVED'
+    | 'CLAIM_PAYOUT_APPROVED'
+    | 'CLAIM_DENIAL_ISSUED'
+    | 'CLAIM_SALVAGE_INITIATED'
+    | 'CLAIM_EVIDENCE_ATTACHED'
+    | 'CLAIM_ANALYSIS_COMPLETED'
+    | 'CLAIM_FRAUD_SCORED';
 
-export interface LedgerEvent {
-    readonly eventId: string;
-    readonly eventType: LedgerEventType;
-    readonly timestamp: string;
-    readonly walletId: string;
-    readonly itemId: string;
-    readonly payload: Record<string, unknown>;
-    readonly sourceApp: 'CLAIMSIQ';
-    readonly correlationId: string;
-    readonly previousEventId?: string; // Hash chain
+export interface LedgerSubject {
+    asset_id: string;
+    claim_id?: string;
+    anchor_id?: string;
+    policy_id?: string;
+}
+
+export interface LedgerCanonicalEnvelope {
+    schema_version: '1.0.0';
+    event_type: LedgerEventType;
+    occurred_at: string;
+    correlation_id: string;
+    idempotency_key: string;
+    producer: 'claimsiq';
+    producer_version: string;
+    subject: LedgerSubject;
+    payload: Record<string, unknown>;
+    canonical_hash_hex: string;
+    signatures?: {
+        device_sig?: string;
+        provider_sig?: string;
+    };
+}
+
+export interface LedgerWriteResult {
+    readonly event_id: string;
+    readonly sequence_number: number;
+    readonly entry_hash: string;
+    readonly committed_at: string;
+    readonly schema_version: string;
+}
+
+export class LedgerClient {
+    private readonly baseUrl: string;
+    private readonly writtenEvents: LedgerCanonicalEnvelope[] = []; // For testing/audit
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || process.env.LEDGER_API_URL || 'http://localhost:8006';
+    }
+
+    /**
+     * Write an event to the Proveniq Ledger
+     * POST /v1/ledger/events/canonical
+     */
+    public async writeEvent(
+        eventType: LedgerEventType,
+        subject: LedgerSubject,
+        payload: Record<string, unknown>,
+        correlationId?: string
+    ): Promise<LedgerWriteResult> {
+        const corrId = correlationId || `corr_${randomUUID()}`;
+        const apiKey = process.env.LEDGER_API_KEY || 'default-execution-key';
+
+        // Calculate Payload Hash (SHA256)
+        const payloadStr = JSON.stringify(payload);
+        const payloadHash = createHash('sha256').update(payloadStr).digest('hex');
+
+        const event: LedgerCanonicalEnvelope = {
+            schema_version: '1.0.0',
+            event_type: eventType,
+            occurred_at: new Date().toISOString(),
+            correlation_id: corrId,
+            idempotency_key: randomUUID(),
+            producer: 'claimsiq',
+            producer_version: '1.0.0',
+            subject: subject,
+            payload: payload,
+            canonical_hash_hex: payloadHash,
+            // signatures: undefined // Add if we have signing keys
+        };
+
+        console.log(`[LEDGER] POST ${this.baseUrl}/api/v1/events/canonical | Type: ${eventType}`);
+
+        try {
+            const response = await fetch(`${this.baseUrl}/api/v1/events/canonical`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                },
+                body: JSON.stringify(event),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Ledger write failed: ${response.status} ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            // Store for testing/audit
+            this.writtenEvents.push(event);
+
+            return {
+                event_id: data.event_id,
+                sequence_number: data.sequence_number,
+                entry_hash: data.entry_hash,
+                committed_at: data.committed_at,
+                schema_version: data.schema_version,
+            };
+        } catch (error) {
+            console.error('[LEDGER] Write Error:', error);
+            // FAIL-LOUD: Propagate error
+            throw error;
+        }
+    }
+
+    /**
+     * CLAIM_INTAKE_RECEIVED (was claim.created)
+     */
+    public async writeClaimCreated(
+        claimId: string,
+        walletId: string,
+        assetId: string,
+        incidentType: string,
+        claimAmount: number
+    ): Promise<LedgerWriteResult> {
+        return this.writeEvent(
+            'CLAIM_INTAKE_RECEIVED',
+            { asset_id: assetId, claim_id: claimId }, // Subject
+            {
+                claimId,
+                walletId,
+                incidentType,
+                claimAmount,
+                status: 'INTAKE',
+            }
+        );
+    }
+
+    /**
+     * CLAIM_PAYOUT_APPROVED / CLAIM_DENIAL_ISSUED (was claim.settled)
+     */
+    public async writeClaimSettled(
+        claimId: string,
+        walletId: string,
+        assetId: string,
+        decision: 'PAY' | 'DENY' | 'FLAG',
+        settlementAmount?: number,
+        seal?: string
+    ): Promise<LedgerWriteResult> {
+        let eventType: LedgerEventType = 'CLAIM_FRAUD_SCORED'; // Default for FLAG
+
+        if (decision === 'PAY') eventType = 'CLAIM_PAYOUT_APPROVED';
+        if (decision === 'DENY') eventType = 'CLAIM_DENIAL_ISSUED';
+
+        return this.writeEvent(
+            eventType,
+            { asset_id: assetId, claim_id: claimId },
+            {
+                claimId,
+                walletId,
+                decision,
+                settlementAmount,
+                seal,
+                settledAt: new Date().toISOString(),
+            }
+        );
+    }
+
+    /**
+     * CLAIM_SALVAGE_INITIATED (was custody.changed)
+     */
+    public async writeCustodyChanged(
+        walletId: string,
+        itemId: string,
+        fromState: string,
+        toState: string,
+        reason: string
+    ): Promise<LedgerWriteResult> {
+        return this.writeEvent(
+            'CLAIM_SALVAGE_INITIATED',
+            { asset_id: itemId },
+            {
+                walletId,
+                fromState,
+                toState,
+                reason,
+            }
+        );
+    }
+
+    /**
+     * Get written events (for testing/audit)
+     */
+    public getWrittenEvents(): LedgerCanonicalEnvelope[] {
+        return [...this.writtenEvents];
+    }
+}
+
+// Singleton instance
+let ledgerClientInstance: LedgerClient | null = null;
+
+export function getLedgerClient(): LedgerClient {
+    if (!ledgerClientInstance) {
+        ledgerClientInstance = new LedgerClient();
+    }
+    return ledgerClientInstance;
 }
 
 export interface LedgerWriteResult {
