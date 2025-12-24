@@ -1,45 +1,33 @@
-# ============================================
-# PROVENIQ CLAIMSIQ - DOCKERFILE
-# Enterprise Claims Intelligence Engine
-# ============================================
-
 # STAGE 1: BUILD
-FROM node:20-alpine AS builder
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Install dependencies first (cache layer)
 COPY package*.json ./
-RUN npm ci
-
-# Copy source and build
+# Install ALL dependencies (including devDeps for build)
+RUN npm ci 
 COPY tsconfig.json ./
 COPY src ./src
+# Compile TS to JS
 RUN npm run build
 
-# STAGE 2: RUNNER
-FROM node:20-alpine AS runner
+# STAGE 2: PRODUCTION RUNNER
+FROM node:18-alpine AS runner
 WORKDIR /app
-
-# Production environment
 ENV NODE_ENV=production
 
-# Install production dependencies only
+# Copy package.json again for prod install
 COPY package*.json ./
+# Install ONLY production dependencies
 RUN npm ci --only=production
 
-# Copy built artifacts
+# Copy compiled source from builder
 COPY --from=builder /app/dist ./dist
 
-# Security: Run as non-root user
+# Create non-root user for security
 RUN addgroup -S proveniq && adduser -S claimsiq -G proveniq
 USER claimsiq
 
-# ClaimsIQ runs on 3000
+# Expose API Port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
-
-# Start the server
-CMD ["node", "dist/index.js"]
+# Start Command
+CMD ["node", "dist/src/api/server.js"]
