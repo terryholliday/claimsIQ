@@ -1,44 +1,53 @@
 
-import { ClaimDecision } from "./schema";
+import { ClaimDecision } from './schema';
 
-export interface PolicyDecision {
+export interface AdjudicationResult {
     decision: ClaimDecision;
     amount_micros: string;
     currency: string;
-    reason: string;
 }
 
-const DEMO_PAYOUT_MICROS = process.env.DEMO_CLAIM_PAYOUT_MICROS || "5000000000"; // $5,000.00
-const DEMO_CURRENCY = process.env.DEMO_CURRENCY || "USD";
-const PROTECTION_ACTIVE = process.env.DEMO_PROTECTION_ACTIVE === "true";
+export class PolicyEngine {
+    private readonly protectionActive: boolean;
+    private readonly defaultPayoutAmount: string;
+    private readonly defaultCurrency: string;
 
-export function evaluateClaim(triggerType: string, assetId: string): PolicyDecision {
-    // Deterministic Logic for Demo
+    constructor(env: NodeJS.ProcessEnv = process.env) {
+        this.protectionActive = env.DEMO_PROTECTION_ACTIVE === 'true';
+        this.defaultPayoutAmount = env.DEMO_CLAIM_PAYOUT_MICROS || '5000000000'; // $5,000.00
+        this.defaultCurrency = env.DEMO_CURRENCY || 'USD';
 
-    // Only pay on ANCHOR_SEAL_BROKEN if protection is active
-    if (triggerType === "ANCHOR_SEAL_BROKEN") {
-        if (PROTECTION_ACTIVE) {
-            return {
-                decision: "PAY",
-                amount_micros: DEMO_PAYOUT_MICROS,
-                currency: DEMO_CURRENCY,
-                reason: "Automated Approval: Seal Breach detected on Protected Asset."
-            };
-        } else {
-            return {
-                decision: "REVIEW",
-                amount_micros: "0",
-                currency: DEMO_CURRENCY,
-                reason: "Flagged for Review: Seal Breach detected but Protection Inactive."
-            };
-        }
+        console.log('[PolicyEngine] Config:', {
+            protectionActive: this.protectionActive,
+            defaultPayout: this.defaultPayoutAmount,
+            currency: this.defaultCurrency
+        });
     }
 
-    // Default reject/review other triggers
-    return {
-        decision: "REVIEW",
-        amount_micros: "0",
-        currency: DEMO_CURRENCY,
-        reason: `Manual Review Required: Trigger ${triggerType} not auto-adjudicated.`
-    };
+    /**
+     * Deterministically evaluate a claim based on the Asset ID and Policy State.
+     * For v1.0.1 Demo:
+     * - If DEMO_PROTECTION_ACTIVE is true -> PAY
+     * - Otherwise -> REVIEW
+     */
+    public evaluateClaim(assetId: string): AdjudicationResult {
+        // In a real system, this would query Core for the asset's policy state.
+        // Here, we follow the STRICT deterministic rule from the prompt.
+
+        if (this.protectionActive) {
+            console.log(`[PolicyEngine] Asset ${assetId} -> PROTECTION ACTIVE -> PAY`);
+            return {
+                decision: 'PAY',
+                amount_micros: this.defaultPayoutAmount,
+                currency: this.defaultCurrency,
+            };
+        }
+
+        console.log(`[PolicyEngine] Asset ${assetId} -> PROTECTION INACTIVE -> REVIEW`);
+        return {
+            decision: 'REVIEW',
+            amount_micros: '0',
+            currency: this.defaultCurrency,
+        };
+    }
 }

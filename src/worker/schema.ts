@@ -1,74 +1,71 @@
 
-import { z } from "zod";
+import { z } from 'zod';
 
-// =============================================================================
-// SHARED TYPES (Mirroring @proveniq/contracts)
-// =============================================================================
+// Re-export shared schemas for worker usage
+// This avoids deep relative imports if the worker is inside the same repo
+// or allows easy copy-paste if extracted.
 
-export const IntStringSchema = z
-    .string()
-    .regex(/^-?\d+$/, "Must be an integer string");
-
-export const BaseEventSchema = z.object({
-    schema_version: z.literal("1.0.0"),
-    created_at: z.string().datetime(),
-    correlation_id: z.string().uuid(),
-    idempotency_key: z.string().min(10),
-});
+export const IntStringSchema = z.string().regex(/^-?\d+$/);
 
 export const ClaimDecisionEnum = z.enum(["PAY", "DENY", "REVIEW"]);
 export type ClaimDecision = z.infer<typeof ClaimDecisionEnum>;
 
-// =============================================================================
-// INCOMING TRIGGERS
-// =============================================================================
-
-export const AnchorSealBrokenEventSchema = BaseEventSchema.extend({
-    event_type: z.literal("ANCHOR_SEAL_BROKEN"),
-    payload: z.object({
-        anchor_id: z.string(),
-        asset_id: z.string().optional(), // Often inferred in real systems, but useful if present
-        seal_id: z.string(),
-        timestamp: z.string(),
-        location: z.record(z.unknown()).optional(),
-    }).passthrough(), // Allow other fields
-});
-
-// =============================================================================
-// OUTGOING EVENTS
-// =============================================================================
-
-export const ClaimOpenedEventSchema = BaseEventSchema.extend({
+export const ClaimOpenedEventSchema = z.object({
     event_type: z.literal("CLAIM_OPENED"),
+    schema_version: z.string(),
+    correlation_id: z.string(),
+    idempotency_key: z.string(),
+    occurred_at: z.string(),
+    producer: z.string(),
+    producer_version: z.string(),
+    subject: z.string(),
     payload: z.object({
-        claim_id: z.string().startsWith("claim_"),
+        claim_id: z.string().regex(/^claim_[a-zA-Z0-9-]+$/),
         asset_id: z.string(),
         trigger_event_id: z.string(),
         trigger_event_type: z.string(),
     }),
 });
 
-export const ClaimDecisionRecordedEventSchema = BaseEventSchema.extend({
+export const ClaimDecisionRecordedEventSchema = z.object({
     event_type: z.literal("CLAIM_DECISION_RECORDED"),
+    schema_version: z.string(),
+    correlation_id: z.string(),
+    idempotency_key: z.string(),
+    occurred_at: z.string(),
+    producer: z.string(),
+    producer_version: z.string(),
+    subject: z.string(),
     payload: z.object({
-        claim_id: z.string().startsWith("claim_"),
+        claim_id: z.string().regex(/^claim_[a-zA-Z0-9-]+$/),
         decision: ClaimDecisionEnum,
         amount_micros: IntStringSchema,
         currency: z.string().length(3),
     }),
 });
 
-export const ClaimPayoutAuthorizedEventSchema = BaseEventSchema.extend({
+export const ClaimPayoutAuthorizedEventSchema = z.object({
     event_type: z.literal("CLAIM_PAYOUT_AUTHORIZED"),
+    schema_version: z.string(),
+    correlation_id: z.string(),
+    idempotency_key: z.string(),
+    occurred_at: z.string(),
+    producer: z.string(),
+    producer_version: z.string(),
+    subject: z.string(),
     payload: z.object({
-        claim_id: z.string().startsWith("claim_"),
+        claim_id: z.string().regex(/^claim_[a-zA-Z0-9-]+$/),
         amount_micros: IntStringSchema,
         currency: z.string().length(3),
         authorized_by_event_id: z.string(),
     }),
 });
 
-export type AnchorSealBrokenEvent = z.infer<typeof AnchorSealBrokenEventSchema>;
-export type ClaimOpenedEvent = z.infer<typeof ClaimOpenedEventSchema>;
-export type ClaimDecisionRecordedEvent = z.infer<typeof ClaimDecisionRecordedEventSchema>;
-export type ClaimPayoutAuthorizedEvent = z.infer<typeof ClaimPayoutAuthorizedEventSchema>;
+export const LedgerEventSchema = z.discriminatedUnion("event_type", [
+    ClaimOpenedEventSchema,
+    ClaimDecisionRecordedEventSchema,
+    ClaimPayoutAuthorizedEventSchema,
+    z.object({ event_type: z.literal("ANCHOR_SEAL_BROKEN"), payload: z.any() }).passthrough(),
+]);
+
+export type LedgerEvent = z.infer<typeof LedgerEventSchema>;
