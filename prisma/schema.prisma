@@ -1,0 +1,354 @@
+// ============================================
+// PROVENIQ CLAIMSIQ - PRISMA SCHEMA
+// ============================================
+// 
+// IMMUTABLE AUDIT VAULT
+// DecisionRecord: One row per claim, forever
+// No updates allowed post-insert
+//
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CLAIM - Core entity
+// ============================================
+model Claim {
+  id              String   @id @default(uuid()) @db.Uuid
+  external_id     String?  @unique
+  
+  // Relationships
+  policy_id       String
+  asset_id        String
+  claimant_did    String
+  
+  // Classification
+  claim_type      ClaimType
+  status          ClaimStatus @default(INTAKE)
+  
+  // Financials - Minor units (cents)
+  claimed_amount  BigInt
+  currency        CurrencyCode
+  approved_amount BigInt?
+  
+  // Description
+  description     String   @db.Text
+  
+  // Location (JSON for flexibility)
+  incident_location Json?
+  
+  // Timestamps
+  incident_date   DateTime
+  submitted_at    DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  decisioned_at   DateTime?
+  
+  // Metadata
+  metadata        Json?
+  
+  // Correlation for Capital integration
+  correlation_id  String?  @db.Uuid
+  
+  // Relations
+  decision        DecisionRecord?
+  evidence        Evidence[]
+  audit_events    AuditEvent[]
+  
+  @@index([policy_id])
+  @@index([asset_id])
+  @@index([claimant_did])
+  @@index([status])
+  @@index([submitted_at])
+  @@index([correlation_id])
+  @@map("claims")
+}
+
+// ============================================
+// DECISION RECORD - IMMUTABLE
+// ============================================
+// ONE ROW PER CLAIM, FOREVER
+// NO UPDATES ALLOWED POST-INSERT
+// ============================================
+model DecisionRecord {
+  id                        String          @id @default(uuid()) @db.Uuid
+  claim_id                  String          @unique @db.Uuid
+  
+  // Decision outcome
+  decision                  DecisionOutcome
+  
+  // Denial details
+  denial_reason             DenialReason?
+  denial_explanation        String?         @db.Text
+  
+  // Review details
+  review_reason             ReviewReason?
+  review_priority           ReviewPriority?
+  
+  // Approved amount (if PAY)
+  approved_amount           BigInt?
+  approved_currency         CurrencyCode?
+  
+  // Rationale - REQUIRED for regulatory compliance
+  rationale                 Json
+  
+  // Decision maker
+  decided_by                DecisionMaker
+  decided_by_user_id        String?
+  
+  // Timestamps - IMMUTABLE after insert
+  decided_at                DateTime        @default(now())
+  
+  // Cryptographic audit signature
+  audit_signature           String          @unique
+  
+  // Capital integration
+  capital_decision_id       String?         @db.Uuid
+  capital_response          Json?
+  
+  // Relation
+  claim                     Claim           @relation(fields: [claim_id], references: [id])
+  
+  @@index([decided_at])
+  @@index([decision])
+  @@index([capital_decision_id])
+  @@map("decision_records")
+}
+
+// ============================================
+// EVIDENCE
+// ============================================
+model Evidence {
+  id              String         @id @default(uuid()) @db.Uuid
+  claim_id        String         @db.Uuid
+  
+  // Classification
+  evidence_type   EvidenceType
+  status          EvidenceStatus @default(PENDING)
+  
+  // Content
+  file_hash       String?
+  file_url        String?
+  content         Json?
+  
+  // Verification
+  verified_at     DateTime?
+  verified_by     String?
+  verification_notes String?     @db.Text
+  
+  // Timestamps
+  submitted_at    DateTime       @default(now())
+  
+  // Metadata
+  metadata        Json?
+  
+  // Relation
+  claim           Claim          @relation(fields: [claim_id], references: [id])
+  
+  @@index([claim_id])
+  @@index([evidence_type])
+  @@index([status])
+  @@map("evidence")
+}
+
+// ============================================
+// AUDIT EVENT - APPEND-ONLY LOG
+// ============================================
+// NEVER UPDATED OR DELETED
+// ============================================
+model AuditEvent {
+  id                String         @id @default(uuid()) @db.Uuid
+  sequence_number   BigInt         @unique @default(autoincrement())
+  
+  // Event classification
+  event_type        AuditEventType
+  severity          Severity
+  
+  // Subject
+  subject_type      SubjectType
+  subject_id        String
+  
+  // Actor
+  actor_type        ActorType
+  actor_id          String
+  actor_ip          String?
+  actor_user_agent  String?
+  
+  // Event data
+  description       String         @db.Text
+  
+  // State change
+  previous_state    Json?
+  new_state         Json?
+  
+  // Metadata
+  metadata          Json?
+  
+  // Correlation
+  correlation_id    String?        @db.Uuid
+  parent_event_id   String?        @db.Uuid
+  
+  // Timestamps
+  occurred_at       DateTime
+  recorded_at       DateTime       @default(now())
+  
+  // Integrity chain
+  event_hash        String         @unique
+  previous_event_hash String?
+  
+  // Optional claim relation
+  claim_id          String?        @db.Uuid
+  claim             Claim?         @relation(fields: [claim_id], references: [id])
+  
+  @@index([event_type])
+  @@index([subject_type, subject_id])
+  @@index([actor_id])
+  @@index([occurred_at])
+  @@index([correlation_id])
+  @@index([claim_id])
+  @@map("audit_events")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum ClaimStatus {
+  INTAKE
+  VERIFYING
+  DECISIONED
+  AUDIT
+}
+
+enum ClaimType {
+  DAMAGE
+  THEFT
+  LOSS
+  LIABILITY
+  OTHER
+}
+
+enum CurrencyCode {
+  USD
+  EUR
+  GBP
+  USDC
+}
+
+enum DecisionOutcome {
+  PAY
+  DENY
+  REVIEW
+}
+
+enum DenialReason {
+  POLICY_NOT_ACTIVE
+  ASSET_NOT_COVERED
+  OWNER_MISMATCH
+  COVERAGE_LIMIT_EXCEEDED
+  DUPLICATE_CLAIM
+  FRAUD_DETECTED
+  INSUFFICIENT_EVIDENCE
+  EXCLUSION_APPLIES
+  LATE_SUBMISSION
+  OTHER
+}
+
+enum ReviewReason {
+  HIGH_VALUE_CLAIM
+  FRAUD_SIGNALS_DETECTED
+  PARTIAL_VERIFICATION
+  COMPLEX_CLAIM
+  POLICY_AMBIGUITY
+  ESCALATED_BY_SYSTEM
+  OTHER
+}
+
+enum ReviewPriority {
+  URGENT
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum DecisionMaker {
+  SYSTEM
+  MANUAL
+}
+
+enum EvidenceType {
+  PHOTO
+  VIDEO
+  DOCUMENT
+  RECEIPT
+  POLICE_REPORT
+  WITNESS_STATEMENT
+  APPRAISAL
+  OTHER
+}
+
+enum EvidenceStatus {
+  PENDING
+  VERIFIED
+  FLAGGED
+  REJECTED
+}
+
+enum AuditEventType {
+  CLAIM_SUBMITTED
+  CLAIM_VALIDATED
+  CLAIM_REJECTED
+  CLAIM_STATUS_CHANGED
+  EVIDENCE_SUBMITTED
+  EVIDENCE_VERIFIED
+  EVIDENCE_FLAGGED
+  EVIDENCE_REJECTED
+  LEDGER_VERIFICATION_STARTED
+  LEDGER_VERIFICATION_COMPLETED
+  LEDGER_VERIFICATION_FAILED
+  FRAUD_SIGNAL_DETECTED
+  FRAUD_ASSESSMENT_COMPLETED
+  FRAUD_SIGNAL_REVIEWED
+  DECISION_RENDERED
+  DECISION_OVERRIDDEN
+  DECISION_APPEALED
+  PAYOUT_INITIATED
+  PAYOUT_COMPLETED
+  PAYOUT_FAILED
+  SYSTEM_ERROR
+  SYSTEM_WARNING
+  CONFIG_CHANGED
+  MANUAL_REVIEW_STARTED
+  MANUAL_REVIEW_COMPLETED
+  MANUAL_OVERRIDE
+}
+
+enum Severity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+enum SubjectType {
+  CLAIM
+  EVIDENCE
+  DECISION
+  PAYOUT
+  SYSTEM
+}
+
+enum ActorType {
+  SYSTEM
+  USER
+  API
+  WEBHOOK
+  SCHEDULER
+}
