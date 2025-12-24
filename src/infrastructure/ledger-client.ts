@@ -6,7 +6,7 @@
  * POST /v1/ledger/events
  */
 
-import { createHash, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 
 export type LedgerEventType =
     | 'claim.created'
@@ -35,9 +35,17 @@ export interface LedgerWriteResult {
     readonly timestamp: string;
 }
 
+interface LedgerWriteApiResponse {
+    event_id: string;
+    sequence_number: number;
+    entry_hash: string;
+    created_at: string;
+    schema_version?: string;
+}
+
 export class LedgerClient {
-    private readonly baseUrl: string;
-    private readonly writtenEvents: LedgerEvent[] = []; // For testing/audit
+    readonly baseUrl: string;
+    readonly writtenEvents: LedgerEvent[] = []; // For testing/audit
 
     constructor(baseUrl?: string) {
         this.baseUrl = baseUrl || process.env.LEDGER_API_URL || 'http://localhost:8006';
@@ -84,7 +92,7 @@ export class LedgerClient {
                 throw new Error(`Ledger write failed: ${response.status} ${errorText}`);
             }
 
-            const data = await response.json();
+            const data = (await response.json()) as LedgerWriteApiResponse;
 
             // Store for testing/audit if needed, but primary is remote
             this.writtenEvents.push({
@@ -98,12 +106,7 @@ export class LedgerClient {
                 correlationId: corrId
             });
 
-            return {
-                eventId: data.event_id,
-                blockNumber: data.sequence_number,
-                hash: data.entry_hash,
-                timestamp: data.created_at,
-            };
+            return LedgerClient.toWriteResult(data);
         } catch (error) {
             console.error('[LEDGER] Write Error:', error);
             // In a real system we might queue this for retry.
@@ -173,10 +176,19 @@ export class LedgerClient {
     public getWrittenEvents(): LedgerEvent[] {
         return [...this.writtenEvents];
     }
+
+    private static toWriteResult(data: LedgerWriteApiResponse): LedgerWriteResult {
+        return {
+            eventId: data.event_id,
+            blockNumber: data.sequence_number,
+            hash: data.entry_hash,
+            timestamp: data.created_at,
+        };
+    }
 }
 
 // Singleton instance
-let ledgerClientInstance: LedgerClient | null = null;
+let ledgerClientInstance: LedgerClient | undefined;
 
 export function getLedgerClient(): LedgerClient {
     if (!ledgerClientInstance) {
