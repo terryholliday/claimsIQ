@@ -150,7 +150,7 @@ const AccountSettingsScreen: React.FC = () => {
             </div>
             <div>
                 <h2 className="text-xl font-semibold text-neutral-dark">Alex Johnson</h2>
-                <p className="text-sm text-gray-500">Senior Adjuster • ClaimsIQ ID: ADJ-8821</p>
+                <p className="text-sm text-gray-500">Senior Adjuster • TrueManifest ID: ADJ-8821</p>
             </div>
         </div>
 

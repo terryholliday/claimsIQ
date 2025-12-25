@@ -10,7 +10,7 @@ export const createMockClaim = (overrides?: Partial<Claim>): Claim => {
         deductible: 500,
         claimDate: '2023-06-01',
         location: 'Test City, ST',
-        status: ClaimStatus.NEW_FROM_HOME,
+        status: ClaimStatus.NEW_FROM_MYARK,
         totalClaimedValue: 0,
         touchTime: 0,
         auditTrail: [],
@@ -36,7 +36,7 @@ import { Vault, SalvageItem, AuctionLot, EntityType, CurrencyCode } from './cont
 
 export const createMockVault = (overrides?: Partial<Vault>): Vault => ({
     id: 'vault-1',
-    urn: 'urn:proveniq:home:vault:vault-1',
+    urn: 'urn:trueark:myark:vault:vault-1',
     ownerId: 'user-1',
     name: 'Main Vault',
     assetIds: [],
@@ -47,7 +47,7 @@ export const createMockVault = (overrides?: Partial<Vault>): Vault => ({
 
 export const createMockSalvageItem = (overrides?: Partial<SalvageItem>): SalvageItem => ({
     id: 'salvage-1',
-    urn: 'urn:proveniq:bids:salvage:salvage-1',
+    urn: 'urn:trueark:arkive:salvage:salvage-1',
     claimItemId: 'claim-item-1',
     originalAssetId: 'asset-1',
     description: 'Damaged 4K TV',
@@ -59,7 +59,7 @@ export const createMockSalvageItem = (overrides?: Partial<SalvageItem>): Salvage
 
 export const createMockAuctionLot = (overrides?: Partial<AuctionLot>): AuctionLot => ({
     id: 'lot-1',
-    urn: 'urn:proveniq:bids:lot:lot-1',
+    urn: 'urn:trueark:arkive:lot:lot-1',
     sellerId: 'carrier-1',
     salvageItemIds: ['salvage-1'],
     title: 'Lot of Electronics',

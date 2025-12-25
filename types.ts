@@ -9,7 +9,7 @@ export enum Screen {
 }
 
 export enum ClaimStatus {
-  NEW_FROM_HOME = 'New from PROVENIQ Home',
+  NEW_FROM_MYARK = 'New from MyARK',
   READY_TO_SYNC = 'Ready to Sync',
   SYNCED_TO_CMS = 'Synced to CMS',
   FLAGGED_FOR_REVIEW = 'Flagged for Review',
@@ -213,7 +213,7 @@ export interface DigitalFieldAdjusterAnalysis {
 
 // --- NEW TYPES FOR CORE SYSTEM FEATURES ---
 
-export interface HomePreLossMetadata {
+export interface MyArkPreLossMetadata {
   preLossItemCount: number;
   preLossTotalValue: number;
   documentedPhotosCount: number;
@@ -221,7 +221,7 @@ export interface HomePreLossMetadata {
   lastUpdated: string;
 }
 
-export interface HomeFastTrackResult {
+export interface MyArkFastTrackResult {
   riskScore: number; // 0-100
   verdict: 'low-risk' | 'medium-risk' | 'high-risk';
   summary: string;
@@ -297,34 +297,13 @@ export interface ClaimHealthCheckResult {
   readyForExport: boolean;
 }
 
-/**
- * @deprecated Use SalvageManifest from src/modules/salvage/salvage.types.ts
- * Legacy type retained for backward compatibility with frontend components.
- */
-export interface LegacySalvageManifest {
+export interface ArkiveManifest {
   id: string;
   createdDate: string;
   assets: Asset[];
   totalEstimatedRecovery: number;
   pickupLocation: string;
   status: 'Draft' | 'Sent_to_Auction' | 'Sold';
-}
-
-/**
- * SalvageManifest - Proveniq Ledger Integration
- * Replaces LegacySalvageManifest. All salvage events are recorded on Proveniq Ledger.
- */
-export interface SalvageManifest {
-  id: string;
-  claimId: string;
-  insurerWalletId: string;
-  createdDate: string;
-  assets: Asset[];
-  totalEstimatedRecovery: number;
-  actualRecovery?: number;
-  pickupLocation: string;
-  status: 'DRAFT' | 'PENDING_PICKUP' | 'IN_TRANSIT' | 'LISTED' | 'SOLD' | 'CANCELLED';
-  ledgerEventIds: string[]; // Proveniq Ledger event references
 }
 
 export interface Asset {
@@ -354,7 +333,7 @@ export interface Asset {
   negotiationScript?: NegotiationScript;
   subrogationAnalysis?: SubrogationAnalysis;
   digitalFieldAdjusterAnalysis?: DigitalFieldAdjusterAnalysis; // New
-  // Salvage / Legacy Fields
+  // Salvage / Arkive Fields
   salvageDisposition?: 'Sold' | 'Scrap' | 'Hold' | 'Donate' | null;
   salvageNotes?: string;
   salvageEstimatedRecovery?: number;
@@ -383,8 +362,8 @@ export interface Claim {
   notes?: ClaimNote[];
   documents?: ClaimDocument[];
   financials?: Financials;
-  preLossMetadata?: HomePreLossMetadata; // New for PROVENIQ Home Intake
-  homeFastTrackResult?: HomeFastTrackResult; // New for PROVENIQ Home Fast-Track
+  preLossMetadata?: MyArkPreLossMetadata; // New for MyARK Intake
+  myArkFastTrackResult?: MyArkFastTrackResult; // New for MyARK Fast-Track
   currentPlaybookStepId?: string;
   payments?: ClaimPayment[];
   generatedLetters?: GeneratedLetter[];

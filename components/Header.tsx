@@ -12,7 +12,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
   const notificationRef = useRef<HTMLDivElement>(null);
 
   const notifications = [
-    { id: 1, type: 'warning', text: "Fraud Alert: High Risk detected on Claim MF-2024-004.", time: "10m ago" },
+    { id: 1, type: 'warning', text: "Fraud Alert: High Risk detected on Manifest MF-2024-004.", time: "10m ago" },
     { id: 2, type: 'success', text: "System Update: Gemini 2.5 Flash model integration complete.", time: "1h ago" },
     { id: 3, type: 'info', text: "New Assignment: 3 Claims added to your inbox.", time: "2h ago" }
   ];
@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
     <header className="bg-white h-16 flex items-center justify-between px-8 border-b border-neutral-medium relative z-30">
       <div>
         <h2 className="text-xl font-semibold text-neutral-dark">Asset Intelligence Portal</h2>
-        <p className="text-sm text-gray-500">Incoming Claims from PROVENIQ Home</p>
+        <p className="text-sm text-gray-500">Incoming Manifests from MyARK<sup className="text-[0.6em]">&trade;</sup></p>
       </div>
       <div className="flex items-center space-x-6">
         

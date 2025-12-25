@@ -11,7 +11,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeScreen, onNavigate }) => {
   const navItems = [
     { screen: Screen.FEATURES, label: 'Platform Features', icon: <LightBulbIcon /> },
     { screen: Screen.TRAINING, label: 'Training Academy', icon: <AcademicCapIcon /> },
-    { screen: Screen.DASHBOARD, label: 'Claims Inbox', icon: <DashboardIcon /> },
+    { screen: Screen.DASHBOARD, label: 'Manifest Inbox', icon: <DashboardIcon /> },
     { screen: Screen.COMPLIANCE, label: 'Regulatory Compliance', icon: <BuildingLibraryIcon /> },
     { screen: Screen.API_DOCS, label: 'API Documentation', icon: <CodeBracketIcon /> },
   ];
@@ -22,8 +22,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeScreen, onNavigate }) => {
       <div className="h-24 flex items-center justify-center border-b border-blue-800 bg-blue-900/30 px-6 shrink-0">
          <div className="text-center">
             <div className="font-black text-3xl tracking-tighter">
-                <span className="text-brand-accent">PROVENIQ</span>
-                <span className="text-white"> ClaimsIQ</span>
+                <span className="text-brand-accent">TRUE</span>
+                <span className="text-white">MANIFEST</span>
             </div>
          </div>
       </div>
@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeScreen, onNavigate }) => {
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
             <span className="font-mono uppercase">System Online</span>
         </div>
-        <p>&copy; 2025 PROVENIQ Technologies.</p>
+        <p>&copy; 2025 TrueManifest Inc.</p>
         <p className="mt-1 opacity-70">Build v2.5.4 (Stable)</p>
       </div>
     </nav>

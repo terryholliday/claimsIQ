@@ -24,17 +24,7 @@
         "./*"
       ]
     },
-    "strict": true,
-    "noImplicitAny": true,
-    "noEmit": false,
-    "outDir": "./dist"
-  },
-  "include": [
-    "src",
-    "scripts"
-  ],
-  "exclude": [
-    "components",
-    "node_modules"
-  ]
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
 }

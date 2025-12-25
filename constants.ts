@@ -3,7 +3,7 @@ import { Claim, ClaimStatus, AssetStatus, FraudRiskLevel, PlaybookStep } from '.
 export const DEFAULT_PLAYBOOK_STEPS: PlaybookStep[] = [
     { id: 'step-1', label: 'FNOL Verification', description: 'Confirm Date of Loss, Policy limits, and deductible.', required: true, completed: false },
     { id: 'step-2', label: 'Contact Customer', description: 'Establish initial contact and set expectations.', required: true, completed: false },
-    { id: 'step-3', label: 'PROVENIQ Home Sync / Inventory', description: 'Ingest list from PROVENIQ Home or create manually.', required: true, completed: false },
+    { id: 'step-3', label: 'MyARK Sync / Inventory', description: 'Ingest list from MyARK or create manually.', required: true, completed: false },
     { id: 'step-4', label: 'Field Inspection', description: 'Digital or onsite inspection of claimed assets.', required: false, completed: false },
     { id: 'step-5', label: 'Pricing & Depreciation', description: 'Apply age, condition, and depreciation.', required: true, completed: false },
     { id: 'step-6', label: 'Coverage Review', description: 'Check limits, exclusions, and sub-limits.', required: true, completed: false },
@@ -32,9 +32,9 @@ export const MOCK_CLAIMS: Claim[] = [
         totalClaimedValue: 8450,
         touchTime: 2700000, // 45 minutes
         auditTrail: [
-            { id: 'log_1', timestamp: '2024-07-15T10:00:00Z', user: 'System', action: 'CLAIM_CREATED', details: 'Ingested from PROVENIQ Home', hash: 'a1b2c3d4' },
+            { id: 'log_1', timestamp: '2024-07-15T10:00:00Z', user: 'System', action: 'CLAIM_CREATED', details: 'Ingested from MyARK™ Mobile App v2.1', hash: 'a1b2c3d4' },
             { id: 'log_2', timestamp: '2024-07-15T10:05:22Z', user: 'Alex Johnson', action: 'VIEWED_MANIFEST', details: 'Adjuster opened file', hash: 'e5f6g7h8' },
-            { id: 'log_3', timestamp: '2024-07-15T10:12:45Z', user: 'ClaimsIQ AI', action: 'FRAUD_SCAN', details: 'Routine Scan: No anomalies detected', hash: 'i9j0k1l2' },
+            { id: 'log_3', timestamp: '2024-07-15T10:12:45Z', user: 'TrueManifest AI', action: 'FRAUD_SCAN', details: 'Routine Scan: No anomalies detected', hash: 'i9j0k1l2' },
             { id: 'log_4', timestamp: '2024-07-15T10:20:00Z', user: 'Alex Johnson', action: 'STATUS_CHANGE', details: 'Changed from NEW to IN_REVIEW', hash: 'm3n4o5p6' }
         ],
         financials: {
@@ -125,7 +125,7 @@ export const MOCK_CLAIMS: Claim[] = [
         deductible: 1000,
         claimDate: '2024-07-12',
         location: 'San Francisco, CA',
-        status: ClaimStatus.NEW_FROM_HOME,
+        status: ClaimStatus.NEW_FROM_MYARK,
         preLossMetadata: {
             preLossItemCount: 52,
             preLossTotalValue: 18500,
@@ -140,7 +140,7 @@ export const MOCK_CLAIMS: Claim[] = [
             transcript: [],
         },
         auditTrail: [
-            { id: 'log_1', timestamp: '2024-07-12T09:15:00Z', user: 'System', action: 'CLAIM_CREATED', details: 'Ingested from PROVENIQ Home', hash: 'x9y8z7' }
+            { id: 'log_1', timestamp: '2024-07-12T09:15:00Z', user: 'System', action: 'CLAIM_CREATED', details: 'Ingested from MyARK™ Mobile App v2.1', hash: 'x9y8z7' }
         ],
         financials: {
             reserves: 4800,
@@ -207,7 +207,7 @@ export const MOCK_CLAIMS: Claim[] = [
         touchTime: 7200000, // 2 hours
         auditTrail: [
             { id: 'log_1', timestamp: '2024-07-16T08:00:00Z', user: 'System', action: 'CLAIM_CREATED', details: 'Ingested', hash: 'u8i9o0' },
-            { id: 'log_2', timestamp: '2024-07-16T08:01:00Z', user: 'ClaimsIQ AI', action: 'AUTO_FLAG', details: 'Timeline Anomaly Detected', hash: 'p1a2s3' }
+            { id: 'log_2', timestamp: '2024-07-16T08:01:00Z', user: 'TrueManifest AI', action: 'AUTO_FLAG', details: 'Timeline Anomaly Detected', hash: 'p1a2s3' }
         ],
         financials: {
             reserves: 10000, // Capped at coverage limit
@@ -254,7 +254,7 @@ export const generateIncomingClaims = (startId: number): Claim[] => {
             deductible: 500,
             claimDate: new Date().toISOString().split('T')[0],
             location: location,
-            status: ClaimStatus.NEW_FROM_HOME,
+            status: ClaimStatus.NEW_FROM_MYARK,
             preLossMetadata: {
                 preLossItemCount: Math.floor(Math.random() * 100) + 20,
                 preLossTotalValue: claimedValue * 10,
@@ -265,7 +265,7 @@ export const generateIncomingClaims = (startId: number): Claim[] => {
             totalClaimedValue: claimedValue,
             touchTime: 0,
             auditTrail: [
-                { id: `log_new_${id}`, timestamp: new Date().toISOString(), user: 'System', action: 'CLAIM_CREATED', details: 'Sync from PROVENIQ Home', hash: `hash_${id}` }
+                { id: `log_new_${id}`, timestamp: new Date().toISOString(), user: 'System', action: 'CLAIM_CREATED', details: 'Sync from MyARK™', hash: `hash_${id}` }
             ],
             financials: {
                 reserves: claimedValue,

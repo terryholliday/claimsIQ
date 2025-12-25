@@ -1,6 +1,6 @@
-import { Asset, LegacySalvageManifest, Claim } from '../types';
+import { Asset, ArkiveManifest, Claim } from '../types';
 
-export const generateLegacySalvageManifest = (claim: Claim): LegacySalvageManifest | null => {
+export const generateArkiveManifest = (claim: Claim): ArkiveManifest | null => {
     // Filter for assets marked as 'Sold' (meaning sent to auction)
     const auctionAssets = claim.assets.filter(a => a.salvageDisposition === 'Sold');
 
@@ -11,7 +11,7 @@ export const generateLegacySalvageManifest = (claim: Claim): LegacySalvageManife
     const totalRecovery = auctionAssets.reduce((sum, asset) => sum + (asset.salvageEstimatedRecovery || 0), 0);
 
     return {
-        id: `SALVAGE-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        id: `ARK-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         createdDate: new Date().toISOString(),
         assets: auctionAssets,
         totalEstimatedRecovery: totalRecovery,

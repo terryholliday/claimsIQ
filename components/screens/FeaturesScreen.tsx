@@ -66,7 +66,7 @@ const ROICalculator: React.FC = () => {
                 </div>
                 <div>
                     <h3 className="text-2xl font-bold">ROI Calculator</h3>
-                    <p className="text-gray-400 text-sm">Estimate your annual savings with ClaimsIQ</p>
+                    <p className="text-gray-400 text-sm">Estimate your annual savings with TrueManifest™</p>
                 </div>
             </div>
 
@@ -169,7 +169,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
           Replacing "Guesstimates" with <span className="text-brand-primary">Asset Intelligence</span>
         </h1>
         <p className="text-lg text-gray-600 leading-relaxed">
-          PROVENIQ ClaimsIQ isn't just a dashboard—it's an AI-powered middleware that sits between your policyholders and your core claims system, automating the 30% of adjuster time spent on manual validation.
+          TrueManifest™ isn't just a dashboard—it's an AI-powered middleware that sits between your policyholders and your core claims system, automating the 30% of adjuster time spent on manual validation.
         </p>
       </div>
 
@@ -182,7 +182,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
             </div>
             <h2 className="text-3xl font-bold text-neutral-dark">The Fraud Defense Grid</h2>
             <p className="mt-4 text-lg text-gray-600 leading-relaxed">
-            ClaimsIQ doesn't rely on simple checklists. We run <strong>six concurrent AI engines</strong> to triangulate truth across pixels, metadata, pricing, and weather history.
+            TrueManifest™ doesn't rely on simple checklists. We run <strong>six concurrent AI engines</strong> to triangulate truth across pixels, metadata, pricing, and weather history.
             </p>
         </div>
 
@@ -285,9 +285,9 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
               <FeatureDeepDive 
                   icon={<MobilePhoneIcon className="h-6 w-6 text-blue-600" />}
                   title="Omni-Channel Intake"
-                  description={<>Seamlessly ingest structured claim data directly from the PROVENIQ Home consumer app, removing data entry bottlenecks. Also supports web portal uploads and API injection from legacy FNOL systems.</>}
+                  description={<>Seamlessly ingest structured claim data directly from the MyARK<sup className="text-[0.6em]">&trade;</sup> consumer app, removing data entry bottlenecks. Also supports web portal uploads and API injection from legacy FNOL systems.</>}
                   bullets={[
-                      "PROVENIQ Home App Integration",
+                      <>MyARK<sup className="text-[0.6em]">&trade;</sup> App Integration</>,
                       "Legacy System API Bridge",
                       "Structured JSON Payloads"
                   ]}
@@ -419,11 +419,11 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
               <FeatureDeepDive 
                   icon={<MobilePhoneIcon className="h-6 w-6 text-blue-600" />}
                   title="Origin Verifier"
-                  description={<>Trust scoring based on data source. We distinguish between high-trust items verified Pre-Loss in the PROVENIQ Home app versus items added manually Post-Loss.</>}
+                  description={<>Trust scoring based on data source. We distinguish between high-trust items verified Pre-Loss in the MyARK<sup className="text-[0.6em]">&trade;</sup> app versus items added manually Post-Loss.</>}
                   bullets={[
                       "Pre-Loss vs. Post-Loss tagging",
                       "Provenance tracking",
-                      "PROVENIQ Home Sync Integration"
+                      <>MyARK<sup className="text-[0.6em]">&trade;</sup> Sync Integration</>
                   ]}
               />
               <FeatureDeepDive 
@@ -493,7 +493,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
               </div>
               <div className="space-y-6">
                   <p className="text-gray-600 text-sm">
-                      ClaimsIQ is designed as an API-first middleware. We ingest data from PROVENIQ Home, process it, and push clean, structured JSON payloads directly into your core claims system via REST API.
+                      TrueManifest™ is designed as an API-first middleware. We ingest data from MyARK<sup className="text-[0.6em]">&trade;</sup>, process it, and push clean, structured JSON payloads directly into your core claims system via REST API.
                   </p>
                   <div className="flex flex-wrap gap-4">
                       <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-700 font-bold text-sm border border-gray-200">Guidewire ClaimCenter</div>
@@ -560,7 +560,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
       {/* Us vs. Them Section */}
       <div className="bg-neutral-50 p-8 rounded-2xl border border-neutral-medium mt-12">
           <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-neutral-dark">ClaimsIQ vs. The Status Quo</h2>
+              <h2 className="text-3xl font-bold text-neutral-dark">TrueManifest™ vs. The Status Quo</h2>
               <p className="text-gray-600 mt-2">Why leading carriers are switching from manual processing to Asset Intelligence.</p>
           </div>
           
@@ -569,7 +569,7 @@ const FeaturesScreen: React.FC<FeaturesScreenProps> = ({ onNavigate }) => {
               <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 border-b border-gray-200 font-bold text-sm text-gray-500 uppercase tracking-wider">
                   <div>Capabilities</div>
                   <div>Legacy Manual Process</div>
-                  <div className="text-brand-primary">ClaimsIQ AI</div>
+                  <div className="text-brand-primary">TrueManifest™ AI</div>
               </div>
               
               <div className="p-4 space-y-1">

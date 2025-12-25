@@ -1,6 +1,6 @@
 # Testing & Observability Guide
 
-This document outlines the testing strategy, tools, and best practices for the PROVENIQ ClaimsIQ application.
+This document outlines the testing strategy, tools, and best practices for the TrueManifest / MyARK application.
 
 ## 🛠 Tech Stack
 

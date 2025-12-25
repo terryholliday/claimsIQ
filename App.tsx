@@ -11,7 +11,7 @@ import AccountSettingsScreen from './components/screens/AccountSettingsScreen';
 import ComplianceScreen from './components/screens/ComplianceScreen';
 import TrainingScreen from './components/screens/TrainingScreen';
 import LandingScreen from './components/screens/LandingScreen';
-import HomeInventoryAppScreen from './components/screens/HomeInventoryAppScreen';
+import MyARKAppScreen from './components/screens/MyArkAppScreen';
 import { MOCK_CLAIMS, generateIncomingClaims } from './constants';
 import { LockClosedIcon } from './components/icons/Icons';
 
@@ -19,7 +19,7 @@ const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 Minutes
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [publicScreen, setPublicScreen] = useState<'landing' | 'home'>('landing');
+  const [publicScreen, setPublicScreen] = useState<'landing' | 'myark'>('landing');
   
   const [activeScreen, setActiveScreen] = useState<Screen>(Screen.FEATURES);
   const [claims, setClaims] = useState<Claim[]>(MOCK_CLAIMS);
@@ -76,14 +76,14 @@ const App: React.FC = () => {
   }, []);
 
   const handleUpdateClaim = useCallback((updatedClaim: Claim) => {
-      setClaims((prevClaims: Claim[]) => prevClaims.map((c: Claim) => c.id === updatedClaim.id ? updatedClaim : c));
+      setClaims(prevClaims => prevClaims.map(c => c.id === updatedClaim.id ? updatedClaim : c));
       setSelectedClaim(updatedClaim);
   }, []);
 
   const handleSyncClaims = useCallback(() => {
      const newClaims = generateIncomingClaims(nextIdCounter);
-     setClaims((prev: Claim[]) => [...newClaims, ...prev]);
-     setNextIdCounter((prev: number) => prev + 1);
+     setClaims(prev => [...newClaims, ...prev]);
+     setNextIdCounter(prev => prev + 1);
      return newClaims.length;
   }, [nextIdCounter]);
 
@@ -126,10 +126,10 @@ const App: React.FC = () => {
   // --- RENDER LOGIC ---
 
   if (!isAuthenticated) {
-      if (publicScreen === 'home') {
-          return <HomeInventoryAppScreen onBack={() => setPublicScreen('landing')} />;
+      if (publicScreen === 'myark') {
+          return <MyARKAppScreen onBack={() => setPublicScreen('landing')} />;
       }
-      return <LandingScreen onGetStarted={handleLogin} onNavigateHomeInventory={() => setPublicScreen('home')} />;
+      return <LandingScreen onGetStarted={handleLogin} onNavigateMyARK={() => setPublicScreen('myark')} />;
   }
 
   if (isSessionLocked) {

@@ -28,7 +28,7 @@ import {
 
 interface LandingScreenProps {
   onGetStarted: () => void;
-  onNavigateHomeInventory: () => void;
+  onNavigateMyARK: () => void;
 }
 
 const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; desc: string }> = ({ icon, title, desc }) => (
@@ -60,7 +60,7 @@ const DashboardShowcase = () => (
       <span>MF-2024-004</span><span>Robert Chen</span><span>Flagged for Review</span>
     </div>
     <div className="p-3 bg-white rounded-lg shadow-sm flex justify-between items-center text-sm">
-      <span>MF-2024-002</span><span>Marcus Holloway</span><span className="font-bold text-blue-600">New from PROVENIQ Home</span>
+      <span>MF-2024-002</span><span>Marcus Holloway</span><span className="font-bold text-blue-600">New from MyARK</span>
     </div>
      <div className="p-3 bg-white rounded-lg shadow-sm flex justify-between items-center text-sm opacity-50">
       <span>MF-2024-003</span><span>Jasmine Kaur</span><span className="font-bold text-gray-500">Synced to CMS</span>
@@ -103,15 +103,15 @@ const DigitalAdjusterShowcase = () => (
 const RiskShieldShowcase = () => (
     <div className="p-4 bg-white rounded-lg shadow-lg text-neutral-dark h-full flex flex-col">
       <h4 className="font-bold text-red-700">Proactive Risk Detected</h4>
-      <p className="text-sm text-gray-600 mt-1">Analysis of PROVENIQ Home inventory photos has identified <strong>1,240 policies</strong> with verified "Black Rubber Washing Machine Hoses" older than 5 years, which have a 40% failure rate.</p>
+      <p className="text-sm text-gray-600 mt-1">Analysis of MyARK network data has identified <strong>1,240 policies</strong> with verified "Black Rubber Washing Machine Hoses" older than 5 years, which have a 40% failure rate.</p>
       <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex-1">
-          <h5 className="font-bold text-blue-800 text-sm">Proposed PROVENIQ Home Push Notification</h5>
+          <h5 className="font-bold text-blue-800 text-sm">Proposed MyARK™ Push Notification</h5>
           <p className="text-xs text-blue-700 mt-1"><strong>⚠️ Safety Alert:</strong> We detected rubber hoses on your washer at risk of bursting. Prevent a flood! Use code SAFEHOME20 for 20% off steel-braided hoses.</p>
       </div>
     </div>
 );
 
-const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateHomeInventory }) => {
+const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateMyARK }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const heroStatements = [
@@ -123,19 +123,19 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateH
 
     const showcases = [
         {
-            url: 'app.proveniqclaimsiq.com/dashboard',
+            url: 'app.truemanifest.com/dashboard',
             component: <DashboardShowcase />,
         },
         {
-            url: 'app.proveniqclaimsiq.com/live-fnol',
+            url: 'app.truemanifest.com/live-fnol',
             component: <LiveFNOLShowcase />,
         },
         {
-            url: 'app.proveniqclaimsiq.com/digital-adjuster',
+            url: 'app.truemanifest.com/digital-adjuster',
             component: <DigitalAdjusterShowcase />,
         },
         {
-            url: 'app.proveniqclaimsiq.com/risk-shield',
+            url: 'app.truemanifest.com/risk-shield',
             component: <RiskShieldShowcase />,
         },
     ];
@@ -162,8 +162,8 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateH
             <header className="py-6 px-4 md:px-8 max-w-7xl mx-auto flex justify-between items-center relative z-20">
                 <div className="flex items-center gap-2">
                     <div className="font-black text-xl tracking-tighter">
-                        <span className="text-brand-accent">PROVENIQ</span>
-                        <span className="text-white"> ClaimsIQ</span>
+                        <span className="text-brand-accent">TRUE</span>
+                        <span className="text-white">MANIFEST</span>
                     </div>
                 </div>
 
@@ -171,7 +171,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateH
                 <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
                     <a href="#features" className="hover:text-white transition-colors">Features</a>
                     <a href="#roi" className="hover:text-white transition-colors">ROI</a>
-                    <button onClick={onNavigateHomeInventory} className="hover:text-white transition-colors">PROVENIQ Home</button>
+                    <button onClick={onNavigateMyARK} className="hover:text-white transition-colors">MyARK App</button>
                 </nav>
 
                 <div className="hidden md:block">
@@ -197,7 +197,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateH
                     <div className="mt-20 text-center space-y-8">
                         <a href="#features" onClick={() => setIsMenuOpen(false)} className="block text-2xl font-bold">Features</a>
                         <a href="#roi" onClick={() => setIsMenuOpen(false)} className="block text-2xl font-bold">ROI</a>
-                        <button onClick={() => { onNavigateHomeInventory(); setIsMenuOpen(false); }} className="block text-2xl font-bold w-full">PROVENIQ Home</button>
+                        <button onClick={() => { onNavigateMyARK(); setIsMenuOpen(false); }} className="block text-2xl font-bold w-full">MyARK App</button>
                         <button
                             onClick={() => { onGetStarted(); setIsMenuOpen(false); }}
                             className="bg-brand-primary text-white w-full max-w-xs mx-auto py-4 rounded-full font-bold text-lg mt-8"
@@ -221,7 +221,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateH
                             </h1>
                         </div>
                         <p className="max-w-2xl mx-auto text-lg text-gray-400 mt-8 leading-relaxed">
-                            PROVENIQ ClaimsIQ sits between your policyholders and your core system, automating 30% of adjuster time and stopping 12% of claim leakage before it happens.
+                            TrueManifest™ sits between your policyholders and your core system, automating 30% of adjuster time and stopping 12% of claim leakage before it happens.
                         </p>
                         <div className="mt-12 flex justify-center">
                             <button
@@ -290,7 +290,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateH
                             <FeatureCard 
                                 icon={<TagIcon className="h-8 w-8" />}
                                 title="Automated Valuation"
-                                desc="ClaimsIQ connects to live web data to find real-time replacement costs, preventing overpayment on inflated or outdated user estimates."
+                                desc="TrueManifest connects to live web data to find real-time replacement costs, preventing overpayment on inflated or outdated user estimates."
                             />
                              <FeatureCard 
                                 icon={<VideoCameraIcon className="h-8 w-8" />}
@@ -321,7 +321,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateH
                     <div className="max-w-4xl mx-auto px-4 text-center">
                         <h2 className="text-4xl font-bold text-white mb-4">The Business Case for Intelligence</h2>
                         <p className="text-lg text-gray-400 mb-12">
-                            Manual validation is the silent killer of profitability. It's slow, expensive, and error-prone. ClaimsIQ provides a clear, measurable return by automating the entire pre-adjudication process.
+                            Manual validation is the silent killer of profitability. It's slow, expensive, and error-prone. TrueManifest provides a clear, measurable return by automating the entire pre-adjudication process.
                         </p>
                         <div className="p-8 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl shadow-2xl">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -380,7 +380,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onNavigateH
             {/* Footer */}
             <footer className="bg-black/20 border-t border-white/10 py-12">
                 <div className="max-w-7xl mx-auto px-4 text-center text-gray-500 text-sm">
-                    <p>&copy; {new Date().getFullYear()} PROVENIQ Technologies. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} TrueManifest Inc. All rights reserved.</p>
                     <p className="mt-2">This is a fictional product demo for a generative AI hackathon.</p>
                 </div>
             </footer>

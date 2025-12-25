@@ -182,7 +182,7 @@ const ComplianceScreen: React.FC = () => {
                                            <div className="text-center">
                                               <div className="h-12 w-48 mb-2 border-b border-gray-400"></div> 
                                               <div className="text-xs text-gray-500 uppercase tracking-wide font-bold">Authorized Signature</div>
-                                              <div className="text-[10px] text-gray-400">ClaimsIQ Compliance Officer</div>
+                                              <div className="text-[10px] text-gray-400">TrueManifest Compliance Officer</div>
                                            </div>
                                            <div className="text-right text-xs text-gray-400 font-mono">
                                                <div>Electronic Filing ID: {filingReport.filingId}</div>

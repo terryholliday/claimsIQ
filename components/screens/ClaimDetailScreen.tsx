@@ -1,15 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Claim, Asset, FraudRiskLevel, AssetStatus, ClaimStatus, WeatherAnalysis, DuplicateAnalysis, RegulatoryCheck, SettlementReport, AuditLogEntry, LiveFNOLAnalysis, ClaimActivity, ClaimNote, ClaimDocument, DigitalFieldAdjusterAnalysis, ClaimHealthCheckResult, PlaybookStep } from '../../types';
-import { analyzeAssetForFraud, analyzeMarketValue, analyzeAssetImage, reconcileReceipt, findLKQReplacement, mapEvidenceToAssets, verifyWeather, detectDuplicates, analyzeBundles, checkPolicyExclusions, calculateDepreciation, auditCategories, generateNegotiationScript, identifySpecialtyItems, analyzeSubrogation, analyzeClaimPadding, performRegulatoryCheck, generateSettlementReport, urlToBase64, fileToBase64, runLiveFNOL, analyzeDamagePhoto, generateClaimSummary, runHomeFastTrackCheck, runClaimHealthCheck } from '../../services/geminiService';
-import { convertToESXDocument, createESXFile, type ProveniqClaimData } from '../../services/xactimate';
-
+import { analyzeAssetForFraud, analyzeMarketValue, analyzeAssetImage, reconcileReceipt, findLKQReplacement, mapEvidenceToAssets, verifyWeather, detectDuplicates, analyzeBundles, checkPolicyExclusions, calculateDepreciation, auditCategories, generateNegotiationScript, identifySpecialtyItems, analyzeSubrogation, analyzeClaimPadding, performRegulatoryCheck, generateSettlementReport, urlToBase64, fileToBase64, runLiveFNOL, analyzeDamagePhoto, generateClaimSummary, runMyArkFastTrackCheck, runClaimHealthCheck } from '../../services/geminiService';
 import { DEFAULT_PLAYBOOK_STEPS } from '../../constants';
 
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import ManifestAssistant from '../ManifestAssistant';
-import { LegacySalvageManifest } from '../../types';
-import { generateLegacySalvageManifest } from '../../utils/arkiveManifest';
+import { ArkiveManifest } from '../../types';
+import { generateArkiveManifest } from '../../utils/arkiveManifest';
 import { UserIcon, DocumentTextIcon, CalendarIcon, CurrencyDollarIcon, SparklesIcon, TagIcon, CloudArrowUpIcon, CheckCircleIcon, ExclamationTriangleIcon, ChatBubbleLeftRightIcon, CameraIcon, ReceiptPercentIcon, PaperClipIcon, InformationCircleIcon, ArrowRightIcon, ScaleIcon, ArrowTrendingDownIcon, DocumentMagnifyingGlassIcon, FlagIcon, PaperAirplaneIcon, CloudIcon, DocumentDuplicateIcon, CpuChipIcon, PlayIcon, CubeTransparentIcon, ShieldExclamationIcon, CalculatorIcon, FolderIcon, MegaphoneIcon, StarIcon, XMarkIcon, CheckBadgeIcon, QuestionMarkCircleIcon, BanknotesIcon, QueueListIcon, ShieldCheckIcon, ArrowPathIcon, BuildingLibraryIcon, QrCodeIcon, MapPinIcon, TableCellsIcon, PrinterIcon, ClockIcon, FingerPrintIcon, LockClosedIcon, MicrophoneIcon, VideoCameraIcon, BoltIcon, XCircleIcon, ListBulletIcon, PlusIcon, CheckIcon, PencilSquareIcon, ChatBubbleBottomCenterTextIcon, ShoppingBagIcon, TruckIcon, MobilePhoneIcon } from '../icons/Icons';
 
 interface ClaimDetailScreenProps {
@@ -24,19 +22,29 @@ interface ActionResult {
     type: 'success' | 'warning' | 'info';
 }
 
+// Types for the Analysis Engine
+interface HealthCheckResult {
+    flags: { level: 'critical' | 'warning' | 'info'; text: string }[];
+    steps: { id: string; title: string; desc: string }[];
+    blockers: string[]; // List of strings describing why export is blocked
+    isExportable: boolean;
+}
+
 const TOOL_DESCRIPTIONS = {
     MARKET: "Finds real-time retail replacement costs from the web to prevent overpayment.",
     FRAUD: "Analyzes assets for price anomalies, suspicious timing, and behavioral red flags.",
     ACV: "Determines life expectancy and calculates Actual Cash Value based on depreciation.",
     BUNDLE: "Breaks down vague grouped items (e.g., 'Gaming Setup') into specific component line items.",
     POLICY: "Scans for exclusions (e.g., Motor Vehicles) or Special Limits based on standard ISO policies.",
-    PADDING: "Detects 'Soft Fraud' by analyzing the ratio of low-value fluff items using Padding Patrol.",
-    SUBRO: "Identifies potential Third-Party Liability (e.g. defective product) via Subro Spotter.",
+    PADDING: "Detects 'Soft Fraud' by analyzing the ratio of low-value fluff items using Padding Patrol™.",
+    SUBRO: "Identifies potential Third-Party Liability (e.g. defective product) via Subro Spotter™.",
     TAXON: "Identifies miscategorized items (e.g., Jewelry listed as Misc) to enforce sub-limits.",
     TRIAGE: "Flags high-value antiques/art that require external professional appraisal.",
     EVIDENCE: "Scans uploaded PDFs (Police Reports, etc.) and links them to specific assets they mention.",
     RECEIPT: "Process receipt images sent via email to match line items."
 };
+
+// --- COMPONENTS ---
 
 const DamageAnalysisModal: React.FC<{
     asset: Asset;
@@ -155,7 +163,7 @@ const DamageAnalysisModal: React.FC<{
                         <VideoCameraIcon className="h-5 w-5 text-brand-primary" />
                         AI Damage Assessment: <span className="font-medium text-gray-600">{asset.name}</span>
                     </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-200 transition-colors">
+                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 text-gray-500 transition-colors">
                         <XMarkIcon className="h-6 w-6" />
                     </button>
                 </div>
@@ -164,7 +172,7 @@ const DamageAnalysisModal: React.FC<{
                     <div className="flex flex-col p-4 border-b lg:border-b-0 lg:border-r border-gray-200">
                         <div className="flex-1 grid grid-cols-2 gap-4">
                             <div>
-                                <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Pre-Loss Condition <span className="text-blue-600">(from PROVENIQ Home)</span></h4>
+                                <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Pre-Loss Condition <span className="text-blue-600">(from MyARK™)</span></h4>
                                 <img src={asset.imageUrl} alt="Pre-loss" className="w-full h-full object-cover rounded-lg border border-gray-200 bg-gray-100" />
                             </div>
                             <div className="relative">
@@ -332,7 +340,7 @@ const AIClaimBriefing: React.FC<{
         const newNote: ClaimNote = {
             id: `note-ai-${Date.now()}`,
             timestamp: new Date().toISOString(),
-            author: 'ClaimsIQ AI',
+            author: 'TrueManifest AI',
             content: `Suggested task added from AI Action Plan.\n\nReasoning: "${action.reasoning}"`,
             type: 'log',
         };
@@ -370,7 +378,7 @@ const AIClaimBriefing: React.FC<{
             newNotes.push({
                 id: `note-ai-${timestamp}`,
                 timestamp: new Date().toISOString(),
-                author: 'ClaimsIQ AI',
+                author: 'TrueManifest AI',
                 content: `Suggested task added from AI Action Plan.\n\nReasoning: "${action.reasoning}"`,
                 type: 'log',
             });
@@ -416,9 +424,6 @@ const AIClaimBriefing: React.FC<{
                             <p className="text-gray-400 text-xs mt-1">Generated by Gemini just now.</p>
                         </div>
                     </div>
-                    <button onClick={() => setClaim(prev => ({ ...prev, claimSummary: null }))} className="hover:bg-white/20 rounded-full p-1 transition-colors">
-                        <XMarkIcon className="h-6 w-6" />
-                    </button>
                 </div>
                 <div className="p-6 space-y-6">
                     <blockquote className="border-l-4 border-brand-primary bg-blue-50 p-4 text-brand-primary-dark font-medium italic">
@@ -500,6 +505,7 @@ const AIClaimBriefing: React.FC<{
         </div>
     );
 };
+
 
 const AuditLogModal: React.FC<{ claim: Claim; onClose: () => void }> = ({ claim, onClose }) => {
     return (
@@ -605,13 +611,13 @@ const CommandCenterHelpModal: React.FC<{ isOpen: boolean; onClose: () => void }>
     const tools = [
         { icon: <TagIcon className="h-5 w-5 text-brand-secondary" />, title: "Check Market", desc: TOOL_DESCRIPTIONS.MARKET },
         { icon: <SparklesIcon className="h-5 w-5 text-brand-accent" />, title: "Scan Fraud", desc: TOOL_DESCRIPTIONS.FRAUD },
-        { icon: <CubeTransparentIcon className="h-5 w-5 text-indigo-500" />, title: "Bundle Breakout", desc: TOOL_DESCRIPTIONS.BUNDLE },
-        { icon: <ShieldExclamationIcon className="h-5 w-5 text-orange-500" />, title: "Policy Guardian", desc: TOOL_DESCRIPTIONS.POLICY },
-        { icon: <CalculatorIcon className="h-5 w-5 text-teal-500" />, title: "Smart Depreciator", desc: TOOL_DESCRIPTIONS.ACV },
+        { icon: <CubeTransparentIcon className="h-5 w-5 text-indigo-500" />, title: "Bundle Breakout™", desc: TOOL_DESCRIPTIONS.BUNDLE },
+        { icon: <ShieldExclamationIcon className="h-5 w-5 text-orange-500" />, title: "Policy Guardian™", desc: TOOL_DESCRIPTIONS.POLICY },
+        { icon: <CalculatorIcon className="h-5 w-5 text-teal-500" />, title: "Smart Depreciator™", desc: TOOL_DESCRIPTIONS.ACV },
         { icon: <FolderIcon className="h-5 w-5 text-purple-500" />, title: "Taxonomy Auditor", desc: TOOL_DESCRIPTIONS.TAXON },
         { icon: <StarIcon className="h-5 w-5 text-yellow-500" />, title: "Specialty Triage", desc: TOOL_DESCRIPTIONS.TRIAGE },
-        { icon: <BanknotesIcon className="h-5 w-5 text-green-600" />, title: "Subro Spotter", desc: TOOL_DESCRIPTIONS.SUBRO },
-        { icon: <QueueListIcon className="h-5 w-5 text-red-500" />, title: "Padding Patrol", desc: TOOL_DESCRIPTIONS.PADDING },
+        { icon: <BanknotesIcon className="h-5 w-5 text-green-600" />, title: "Subro Spotter™", desc: TOOL_DESCRIPTIONS.SUBRO },
+        { icon: <QueueListIcon className="h-5 w-5 text-red-500" />, title: "Padding Patrol™", desc: TOOL_DESCRIPTIONS.PADDING },
         { icon: <DocumentMagnifyingGlassIcon className="h-5 w-5 text-gray-600" />, title: "Evidence Mapper", desc: TOOL_DESCRIPTIONS.EVIDENCE },
         { icon: <ReceiptPercentIcon className="h-5 w-5 text-gray-600" />, title: "Ingest Receipt", desc: TOOL_DESCRIPTIONS.RECEIPT },
     ];
@@ -798,6 +804,7 @@ const AssetPhotoViewer: React.FC<{
     );
 };
 
+// Helper component for Secondary Tool Buttons
 const ToolRow: React.FC<{
     icon: React.ReactNode;
     label: string;
@@ -910,11 +917,11 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
 
     const handleRunFastTrack = async () => {
         setIsCheckingFastTrack(true);
-        logAction('HOME_FAST_TRACK_INIT', 'Initiated PROVENIQ Home Fast-Track Check');
-        const result = await runHomeFastTrackCheck(claim);
+        logAction('MYARK_FAST_TRACK_INIT', 'Initiated MyARK Fast-Track Check');
+        const result = await runMyArkFastTrackCheck(claim);
         if (result) {
-            setClaim(prev => ({ ...prev, homeFastTrackResult: result }));
-            logAction('HOME_FAST_TRACK_COMPLETE', `Completed Fast-Track check. Verdict: ${result.verdict}`);
+            setClaim(prev => ({ ...prev, myArkFastTrackResult: result }));
+            logAction('MYARK_FAST_TRACK_COMPLETE', `Completed Fast-Track check. Verdict: ${result.verdict}`);
         }
         setIsCheckingFastTrack(false);
     };
@@ -1227,7 +1234,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 }));
                 if (!suppressModal) {
                     setActionResult({
-                        title: "Bundle Breakout Results",
+                        title: "Bundle Breakout™ Results",
                         summary: `Successfully unpacked ${results.length} bundled items from ${targetAssets.length} checked.`,
                         details: results.map(r => {
                             const asset = claim.assets.find(a => a.id === r.assetId);
@@ -1238,7 +1245,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 }
             } else if (!suppressModal) {
                 setActionResult({
-                    title: "Bundle Breakout Results",
+                    title: "Bundle Breakout™ Results",
                     summary: "No vague bundles detected in the selected assets.",
                     type: 'info'
                 });
@@ -1266,7 +1273,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 }));
                 if (!suppressModal) {
                     setActionResult({
-                        title: "Policy Guardian Report",
+                        title: "Policy Guardian™ Report",
                         summary: `Flagged ${results.length} items with potential policy issues.`,
                         details: results.map(r => {
                             const asset = claim.assets.find(a => a.id === r.assetId);
@@ -1277,7 +1284,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 }
             } else if (!suppressModal) {
                 setActionResult({
-                    title: "Policy Guardian Report",
+                    title: "Policy Guardian™ Report",
                     summary: "No policy exclusions detected in selected assets.",
                     type: 'success'
                 });
@@ -1304,7 +1311,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
             }));
             if (!suppressModal) {
                 setActionResult({
-                    title: "Smart Depreciator Results",
+                    title: "Smart Depreciator™ Results",
                     summary: `Calculated Actual Cash Value (ACV) for ${results.length} assets.`,
                     details: results.map(r => {
                         const asset = claim.assets.find(a => a.id === r.assetId);
@@ -1420,7 +1427,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 }));
                 if (!suppressModal) {
                     setActionResult({
-                        title: "Subro Spotter Results",
+                        title: "Subro Spotter™ Results",
                         summary: `Found ${results.length} potential liability recovery opportunities.`,
                         details: results.map(r => {
                             const asset = claim.assets.find(a => a.id === r.assetId);
@@ -1431,7 +1438,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 }
             } else if (!suppressModal) {
                 setActionResult({
-                    title: "Subro Spotter Results",
+                    title: "Subro Spotter™ Results",
                     summary: "No obvious subrogation potential found in selected assets.",
                     type: 'info'
                 });
@@ -1453,7 +1460,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 if (!suppressModal) {
                     if (result.isPadded) {
                         setActionResult({
-                            title: "Padding Patrol Alert",
+                            title: "Padding Patrol™ Alert",
                             summary: `High Fluff Score detected: ${result.fluffScore}/100.`,
                             details: [
                                 `Found ${result.lowValueCount} low-value items.`,
@@ -1464,7 +1471,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                         });
                     } else {
                         setActionResult({
-                            title: "Padding Patrol Results",
+                            title: "Padding Patrol™ Results",
                             summary: "Claim inventory appears balanced. No signs of artificial padding or stuffing.",
                             type: 'success'
                         });
@@ -1507,71 +1514,6 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
             setClaim(prev => ({ ...prev, status: ClaimStatus.SYNCED_TO_CMS }));
             alert("Manifest successfully exported to Guidewire ClaimCenter.");
         }, 1500);
-    };
-
-    const handleExportToXactimate = async () => {
-        if (!claimHealth.isExportable) {
-            alert("Cannot export: Please resolve blocking issues identified in the investigation guide.");
-            return;
-        }
-        
-        try {
-            // Convert claim to Proveniq format for ESX export using actual Claim/Asset properties
-            const claimData: ProveniqClaimData = {
-                claimId: claim.id,
-                claimNumber: claim.id,
-                dateOfLoss: claim.claimDate,
-                lossType: 'OTHER',
-                status: claim.status,
-                insured: {
-                    name: claim.policyholderName,
-                },
-                property: {
-                    address: {
-                        street1: claim.location,
-                        city: '',
-                        state: '',
-                        zipCode: '',
-                    },
-                    propertyType: 'SINGLE_FAMILY',
-                },
-                rooms: [{
-                    roomId: 'main',
-                    name: 'Contents',
-                    roomType: 'OTHER',
-                    floorLevel: 1,
-                    items: claim.assets.map((asset) => ({
-                        itemId: asset.id,
-                        description: asset.name,
-                        category: asset.category || 'OTHER',
-                        quantity: 1,
-                        replacementCost: asset.claimedValue || 0,
-                        actualCashValue: asset.depreciationAnalysis?.actualCashValue,
-                        serialNumber: asset.serialNumber,
-                        photos: asset.imageUrl ? [asset.imageUrl] : [],
-                    })),
-                }],
-            };
-
-            const esxDocument = convertToESXDocument(claimData);
-            const { blob, filename } = await createESXFile(esxDocument);
-
-            // Create downloadable ESX file (ZIP format)
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            logAction('EXPORT_XACTIMATE', `Exported ${claim.assets.length} items to Xactimate ESX format`);
-            alert(`Successfully exported to ${filename}\n\nThis ESX file can be imported into Xactimate via Tools > Import > Data Transfer.`);
-        } catch (error) {
-            console.error('ESX export error:', error);
-            alert('Failed to export to Xactimate format. Please try again.');
-        }
     };
 
     const handleBatchFraudAnalysis = async (suppressModal = false) => {
@@ -1823,7 +1765,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 <div>
                     <div className="flex items-center space-x-3 mb-1">
                         <h1 className="text-3xl font-bold text-neutral-dark">Manifest: {claim.id}</h1>
-                        <Badge color="blue">Source: PROVENIQ Home</Badge>
+                        <Badge color="blue">Source: MyARK<sup className="text-[0.6em]">&trade;</sup></Badge>
                         {claim.status === ClaimStatus.SYNCED_TO_CMS && <Badge color="green">Synced</Badge>}
                     </div>
                     <p className="text-gray-500 text-sm">Asset Intelligence Dashboard</p>
@@ -1895,21 +1837,27 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 <div className="relative pb-2">
                     <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
                     <div className="relative z-10 flex justify-between px-2">
-                        {playbookSteps.map((step, idx) => (
-                            <button
-                                key={step.id}
-                                onClick={() => handleStepClick(step.id)}
-                                className={`flex flex-col items-center gap-2 group relative focus:outline-none`}
-                                title={step.description}
-                            >
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition-all duration-300 z-20 ${isCurrent ? 'bg-brand-primary border-brand-primary text-white scale-125 shadow-lg ring-4 ring-blue-50' : isCompleted ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-400'}`}>
-                                    {isCompleted ? <CheckIcon className="h-5 w-5" /> : idx + 1}
-                                </div>
-                                <span className={`absolute top-10 text-[10px] font-bold uppercase tracking-wider w-24 text-center transition-colors duration-200 ${isCurrent ? 'text-brand-primary opacity-100' : 'text-gray-400 opacity-0 group-hover:opacity-100'}`}>
-                                    {step.label}
-                                </span>
-                            </button>
-                        ))}
+                        {playbookSteps.map((step, idx) => {
+                            const isCurrent = step.id === currentStep;
+                            const isCompleted = step.completed;
+                            const isFuture = !isCurrent && !isCompleted;
+
+                            return (
+                                <button
+                                    key={step.id}
+                                    onClick={() => handleStepClick(step.id)}
+                                    className={`flex flex-col items-center gap-2 group relative focus:outline-none`}
+                                    title={step.description}
+                                >
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition-all duration-300 z-20 ${isCurrent ? 'bg-brand-primary border-brand-primary text-white scale-125 shadow-lg ring-4 ring-blue-50' : isCompleted ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-400'}`}>
+                                        {isCompleted ? <CheckIcon className="h-5 w-5" /> : idx + 1}
+                                    </div>
+                                    <span className={`absolute top-10 text-[10px] font-bold uppercase tracking-wider w-24 text-center transition-colors duration-200 ${isCurrent ? 'text-brand-primary opacity-100' : 'text-gray-400 opacity-0 group-hover:opacity-100'}`}>
+                                        {step.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
                 <div className="mt-8 pt-4 border-t border-gray-100 flex items-center justify-between">
@@ -1932,7 +1880,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                 </div>
             </div>
 
-            {claim.status === ClaimStatus.NEW_FROM_HOME && (
+            {claim.status === ClaimStatus.NEW_FROM_MYARK && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm mb-6 animate-in slide-in-from-top-4">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div className="flex items-center gap-4">
@@ -1941,7 +1889,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                             </div>
                             <div>
                                 <h2 className="text-xl font-bold text-neutral-dark flex items-center gap-2">
-                                    PROVENIQ Home Fast-Track Queue
+                                    MyARK<sup className="text-xs">&trade;</sup> Fast-Track Queue
                                     <Badge color="blue">New Arrival</Badge>
                                 </h2>
                                 <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
@@ -1952,43 +1900,48 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                             </div>
                         </div>
 
-                        {!claim.homeFastTrackResult ? (
+                        {!claim.myArkFastTrackResult ? (
                             <button
                                 onClick={handleRunFastTrack}
                                 disabled={isCheckingFastTrack}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold shadow-md flex items-center gap-2 transition-all disabled:opacity-70"
                             >
                                 {isCheckingFastTrack ? (
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Analyzing Risk...
+                                    </>
                                 ) : (
-                                    <BoltIcon className="h-5 w-5 text-yellow-300" />
+                                    <>
+                                        <BoltIcon className="h-5 w-5 text-yellow-300" />
+                                        Run Fast-Track Check
+                                    </>
                                 )}
-                                Run Fast-Track Check
                             </button>
                         ) : (
                             <div className="flex items-center gap-3">
                                 <div className="text-right">
                                     <p className="text-xs font-bold uppercase text-gray-500">Fast-Track Verdict</p>
-                                    <p className={`font-bold text-lg ${claim.homeFastTrackResult.verdict === 'FAST_TRACK_APPROVED' ? 'text-green-600' : 'text-orange-600'}`}>
-                                        {claim.homeFastTrackResult.verdict === 'FAST_TRACK_APPROVED' ? 'APPROVED' : 'REVIEW REQ'}
+                                    <p className={`font-bold text-lg ${claim.myArkFastTrackResult.verdict === 'FAST_TRACK_APPROVED' ? 'text-green-600' : 'text-orange-600'}`}>
+                                        {claim.myArkFastTrackResult.verdict === 'FAST_TRACK_APPROVED' ? 'APPROVED' : 'REVIEW REQ'}
                                     </p>
                                 </div>
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 ${claim.homeFastTrackResult.verdict === 'FAST_TRACK_APPROVED' ? 'border-green-100 bg-green-50 text-green-600' : 'border-orange-100 bg-orange-50 text-orange-600'}`}>
-                                    {claim.homeFastTrackResult.verdict === 'FAST_TRACK_APPROVED' ? <CheckBadgeIcon className="h-6 w-6" /> : <ExclamationTriangleIcon className="h-6 w-6" />}
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 ${claim.myArkFastTrackResult.verdict === 'FAST_TRACK_APPROVED' ? 'border-green-100 bg-green-50 text-green-600' : 'border-orange-100 bg-orange-50 text-orange-600'}`}>
+                                    {claim.myArkFastTrackResult.verdict === 'FAST_TRACK_APPROVED' ? <CheckBadgeIcon className="h-6 w-6" /> : <ExclamationTriangleIcon className="h-6 w-6" />}
                                 </div>
                             </div>
                         )}
                     </div>
 
                     {/* Result Details */}
-                    {claim.homeFastTrackResult && (
+                    {claim.myArkFastTrackResult && (
                         <div className="mt-6 pt-6 border-t border-blue-200 grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-2">
                             <div className="md:col-span-2 space-y-4">
                                 <div>
                                     <h4 className="text-xs font-bold uppercase text-gray-500 mb-1">AI Summary</h4>
-                                    <p className="text-sm text-gray-800 italic bg-white/50 p-2 rounded border border-blue-100">"{claim.homeFastTrackResult.summary}"</p>
+                                    <p className="text-sm text-gray-800 italic bg-white/50 p-2 rounded border border-blue-100">"{claim.myArkFastTrackResult.summary}"</p>
                                 </div>
-                                {claim.homeFastTrackResult.verdict === 'FAST_TRACK_APPROVED' && (
+                                {claim.myArkFastTrackResult.verdict === 'FAST_TRACK_APPROVED' && (
                                     <div className="bg-green-100 border border-green-200 rounded-lg p-4 flex items-center justify-between">
                                         <div>
                                             <p className="font-bold text-green-800">Straight-Through Processing Available</p>
@@ -2003,17 +1956,17 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                             <div className="bg-white/60 rounded-lg p-4 border border-blue-100">
                                 <div className="flex justify-between items-center mb-2">
                                     <h4 className="text-xs font-bold uppercase text-gray-500">Risk Score</h4>
-                                    <span className={`font-mono font-bold ${claim.homeFastTrackResult.riskScore < 20 ? 'text-green-600' : 'text-red-600'}`}>{claim.homeFastTrackResult.riskScore}/100</span>
+                                    <span className={`font-mono font-bold ${claim.myArkFastTrackResult.riskScore < 20 ? 'text-green-600' : 'text-red-600'}`}>{claim.myArkFastTrackResult.riskScore}/100</span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                                    <div className={`h-2 rounded-full ${claim.homeFastTrackResult.riskScore < 20 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${100 - claim.homeFastTrackResult.riskScore}%` }}></div>
+                                    <div className={`h-2 rounded-full ${claim.myArkFastTrackResult.riskScore < 20 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${100 - claim.myArkFastTrackResult.riskScore}%` }}></div>
                                 </div>
                                 <h4 className="text-xs font-bold uppercase text-gray-500 mb-2">Discrepancies</h4>
-                                {claim.homeFastTrackResult.discrepancies.length === 0 ? (
+                                {claim.myArkFastTrackResult.discrepancies.length === 0 ? (
                                     <p className="text-xs text-gray-400 italic">None detected.</p>
                                 ) : (
                                     <ul className="space-y-1">
-                                        {claim.homeFastTrackResult.discrepancies.map((d, i) => (
+                                        {claim.myArkFastTrackResult.discrepancies.map((d, i) => (
                                             <li key={i} className="text-xs text-red-600 flex items-start gap-1">
                                                 <span className="mt-0.5">•</span> {typeof d === 'string' ? d : d.issue}
                                             </li>
@@ -2047,11 +2000,16 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                             className="bg-brand-accent hover:bg-yellow-400 text-neutral-dark font-bold px-3 py-1.5 rounded-full text-xs flex items-center gap-2 transition-colors disabled:opacity-60 disabled:cursor-wait"
                         >
                             {isRunAllLoading ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-neutral-dark"></div>
+                                <>
+                                    <div className="w-4 h-4 border-2 border-neutral-dark border-t-transparent rounded-full animate-spin"></div>
+                                    Running All Scans...
+                                </>
                             ) : (
-                                <SparklesIcon className="h-4 w-4" />
+                                <>
+                                    <SparklesIcon className="h-4 w-4" />
+                                    Run All AI Scans
+                                </>
                             )}
-                            Run All AI Scans
                         </button>
                         <button
                             onClick={() => setIsHelpOpen(true)}
@@ -2138,7 +2096,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                         )}
                     </div>
 
-                    {/* SALVAGE AUCTION SUMMARY */}
+                    {/* ARKIVE AUCTION SUMMARY */}
                     {claim.assets.some(a => a.salvageDisposition === 'Sold') && (
                         <div className="mt-6 border-t border-gray-200 pt-6 animate-in slide-in-from-top-2">
                             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -2148,7 +2106,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-emerald-900 text-lg flex items-center gap-2">
-                                            Salvage Auction Manifest
+                                            Arkive Auction Manifest
                                             <Badge color="green">Ready</Badge>
                                         </h4>
                                         <p className="text-emerald-700 text-sm">
@@ -2165,12 +2123,12 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                                     </div>
                                     <button
                                         onClick={() => {
-                                            const manifest = generateLegacySalvageManifest(claim);
+                                            const manifest = generateArkiveManifest(claim);
                                             if (manifest) {
                                                 console.log("Generating Manifest", manifest);
-                                                logAction('GENERATE_SALVAGE_MANIFEST', `Created Manifest ${manifest.id} with ${manifest.assets.length} items`);
+                                                logAction('GENERATE_ARKIVE_MANIFEST', `Created Manifest ${manifest.id} with ${manifest.assets.length} items`);
                                                 setActionResult({
-                                                    title: "Salvage Manifest Generated",
+                                                    title: "Arkive Manifest Generated",
                                                     summary: `Successfully created Auction Manifest ${manifest.id}.`,
                                                     details: [
                                                         `Total Items: ${manifest.assets.length}`,
@@ -2600,7 +2558,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                                                                 </div>
                                                             )}
 
-                                                            {/* Salvage Control */}
+                                                            {/* Arkive Salvage Control */}
                                                             <div className="mt-2 flex items-center gap-2">
                                                                 <label className="text-xs font-bold text-gray-500 uppercase">Salvage:</label>
                                                                 <select
@@ -2619,7 +2577,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                                                                     className="text-xs border-gray-300 rounded focus:ring-brand-primary focus:border-brand-primary py-0.5"
                                                                 >
                                                                     <option value="">-- None --</option>
-                                                                    <option value="Sold">Sold (PROVENIQ Bids)</option>
+                                                                    <option value="Sold">Sold (Arkive)</option>
                                                                     <option value="Scrap">Scrap</option>
                                                                     <option value="Hold">Hold</option>
                                                                     <option value="Donate">Donate</option>
@@ -2637,7 +2595,7 @@ const ClaimDetailScreen: React.FC<ClaimDetailScreenProps> = ({ claim: initialCla
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="p-4 text-sm pt-6">{isPreLoss ? (<span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200" title="Verified in PROVENIQ Home before date of loss"><ShieldCheckIcon className="h-3 w-3 mr-1" /> Pre-Loss</span>) : (<span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200" title="Added manually after date of loss"><UserIcon className="h-3 w-3 mr-1" /> Post-Loss</span>)}</td>
+                                                <td className="p-4 text-sm pt-6">{isPreLoss ? (<span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200" title="Verified in MyARK™ before date of loss"><ShieldCheckIcon className="h-3 w-3 mr-1" /> Pre-Loss</span>) : (<span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200" title="Added manually after date of loss"><UserIcon className="h-3 w-3 mr-1" /> Post-Loss</span>)}</td>
                                                 <td className="p-4 text-gray-600 pt-6 text-sm"><span className="bg-gray-100 px-2 py-1 rounded-md text-gray-700">{asset.category}</span></td>
                                                 <td className="p-4 pt-6 text-sm"><div className={`font-bold ${isDenied ? 'text-red-800 line-through decoration-2 decoration-red-800' : 'text-neutral-dark'}`}>{formatCurrency(asset.claimedValue)} <span className="text-[10px] font-normal text-gray-400 no-underline">RCV</span></div>{asset.depreciationAnalysis && !isDenied && (<div className="mt-1 text-xs"><div className="font-medium text-teal-600">{formatCurrency(asset.depreciationAnalysis.actualCashValue)} <span className="text-[10px] font-normal">ACV</span></div><div className="text-[10px] text-gray-400">-{Math.round(asset.depreciationAnalysis.depreciationPct * 100)}% ({asset.depreciationAnalysis.ageYears} yrs)</div></div>)}</td>
                                                 <td className="p-4 pt-5 w-1/4">{asset.lkqAnalysis && (<div className="mb-3 p-2 bg-blue-50 border border-blue-100 rounded-md shadow-sm"><div className="flex items-center justify-between mb-1"><p className="text-xs font-bold text-brand-primary flex items-center gap-1"><ScaleIcon className="h-3 w-3" /> Modern Equivalent</p></div><p className="text-sm font-semibold text-neutral-black">{asset.lkqAnalysis.modernModel}</p><div className="flex justify-between items-end mt-1"><p className="text-xs text-gray-500">{formatCurrency(asset.lkqAnalysis.modernPrice)}</p>{asset.lkqAnalysis.savings > 0 && (<span className="text-[10px] text-green-700 bg-green-100 px-1 rounded border border-green-200 flex items-center font-medium"><ArrowTrendingDownIcon className="h-3 w-3 mr-0.5" />Save {formatCurrency(asset.lkqAnalysis.savings)}</span>)}</div><p className="text-[10px] text-gray-500 mt-1 italic border-t border-blue-100 pt-1 leading-tight">{asset.lkqAnalysis.reasoning}</p></div>)}{asset.marketValueAnalysis ? (<div className="text-sm relative group"><div className="font-bold flex items-center gap-1 cursor-help bg-gray-50 px-2 py-1 rounded border border-gray-200 w-fit">{formatCurrency(asset.marketValueAnalysis.estimatedValue)}<InformationCircleIcon className="h-4 w-4 text-brand-primary" /></div><div className="absolute z-50 invisible group-hover:visible bg-white border border-gray-200 shadow-2xl rounded-lg p-4 w-80 text-xs text-gray-700 left-0 mt-2 ring-1 ring-black ring-opacity-5"><p className="font-bold text-neutral-dark mb-1">AI Reasoning:</p><p className="mb-3 text-gray-600 italic leading-relaxed">"{asset.marketValueAnalysis.reasoning}"</p><div className="border-t border-gray-100 pt-2"><p className="font-bold text-neutral-dark mb-1">Sources ({asset.marketValueAnalysis.sources.length}):</p><ul className="space-y-1 max-h-32 overflow-y-auto">{asset.marketValueAnalysis.sources.map((source, idx) => (<li key={idx}><a href={source.uri} target="_blank" rel="noreferrer" className="text-brand-primary hover:underline truncate block flex items-center"><ArrowRightIcon className="h-3 w-3 mr-1 inline" />{source.title || 'Web Result'}</a></li>))}</ul></div></div></div>) : (<div className="flex flex-col space-y-2"><button onClick={() => handleCheckMarketValue(asset)} disabled={analyzingMarketId === asset.id || isBatchCheckingMarket || isDenied} className="text-brand-secondary hover:text-brand-primary text-xs font-medium border border-brand-secondary/30 hover:border-brand-primary rounded px-2 py-1.5 flex items-center space-x-1 bg-brand-secondary/5 transition-colors disabled:opacity-50 justify-center">{analyzingMarketId === asset.id ? (<div className="animate-spin rounded-full h-3 w-3 border-b-2 border-brand-primary"></div>) : (<TagIcon className="h-3 w-3" />)}<span>Check Value</span></button><button onClick={() => handleLKQAnalysis(asset)} disabled={lkqAnalyzingId === asset.id || isDenied} className="text-gray-600 hover:text-neutral-dark text-xs font-medium border border-gray-300 hover:border-gray-400 rounded px-2 py-1.5 flex items-center space-x-1 bg-white transition-colors disabled:opacity-50 justify-center">{lkqAnalyzingId === asset.id ? (<div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600"></div>) : (<ScaleIcon className="h-3 w-3" />)}<span>Find Modern Equiv.</span></button></div>)}</td>

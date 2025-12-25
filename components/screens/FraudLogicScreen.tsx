@@ -39,7 +39,7 @@ const FraudLogicScreen: React.FC = () => {
         </div>
         <h1 className="text-4xl font-bold text-neutral-dark">The Fraud Defense Grid</h1>
         <p className="mt-4 text-lg text-gray-600 leading-relaxed">
-          ClaimsIQ doesn't rely on simple checklists. We run <strong>six concurrent AI engines</strong> to triangulate truth across pixels, metadata, pricing, and weather history.
+          TrueManifest™ doesn't rely on simple checklists. We run <strong>six concurrent AI engines</strong> to triangulate truth across pixels, metadata, pricing, and weather history.
         </p>
       </div>
 
