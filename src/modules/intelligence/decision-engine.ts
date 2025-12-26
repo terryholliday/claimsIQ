@@ -90,6 +90,15 @@ export class DecisionEngine {
       }
       confidence -= 15;
     }
+    
+    // === P1: AUTO-DECISIONING ===
+    // If Core fraud score < 30 AND sufficient evidence, auto-approve without review
+    if (fraudScore < 30 && evidenceScore >= 80 && claim.amount_claimed_cents <= 500000) {
+      const approvedAmount = this.calculateApprovedAmount(claim);
+      flags.push('AUTO_APPROVED_P1', 'LOW_FRAUD_RISK');
+      console.log(`[DecisionEngine] P1 Auto-approve: ${claim.claim_id} (fraud=${fraudScore}, evidence=${evidenceScore})`);
+      return this.pay(claim, approvedAmount, 95, flags);
+    }
 
     // === GATE 4: Claim Type Specific Rules ===
     const typeResult = this.applyClaimTypeRules(claim);
