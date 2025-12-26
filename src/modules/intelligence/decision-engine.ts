@@ -9,6 +9,7 @@
  */
 
 import { createHash } from 'crypto';
+import { getCoreClient } from '../../infrastructure/core-client';
 
 // =============================================================================
 // TYPES
@@ -76,13 +77,17 @@ export class DecisionEngine {
       confidence -= 10;
     }
 
-    // === GATE 3: Fraud Signals ===
-    const fraudScore = this.checkFraudSignals(claim);
+    // === GATE 3: Fraud Signals (via Core) ===
+    const coreFraud = await this.getCoreFraudScore(claim);
+    const fraudScore = coreFraud.score;
     if (fraudScore > 70) {
-      return this.deny(claim, 'Fraud signals detected', 90, ['FRAUD_DETECTED']);
+      return this.deny(claim, 'Fraud signals detected', 90, ['FRAUD_DETECTED', ...coreFraud.signals]);
     }
     if (fraudScore > 30) {
       flags.push('ELEVATED_FRAUD_RISK');
+      if (coreFraud.signals.length > 0) {
+        flags.push(...coreFraud.signals.slice(0, 3)); // Top 3 signals
+      }
       confidence -= 15;
     }
 
@@ -178,6 +183,40 @@ export class DecisionEngine {
     }
 
     return fraudScore;
+  }
+
+  /**
+   * Get fraud score from Core service (async version)
+   */
+  async getCoreFraudScore(claim: ClaimData): Promise<{ score: number; signals: string[] }> {
+    try {
+      const coreClient = getCoreClient();
+      const result = await coreClient.getFraudScore({
+        entityType: 'claim',
+        entityId: claim.claim_id,
+        userId: claim.claimant_did,
+        assetId: claim.asset_id,
+        amountMicros: String(claim.amount_claimed_cents * 10000),
+        eventType: claim.claim_type,
+        evidenceCount: claim.evidence.evidence_hashes?.length || 0,
+        hasLedgerHistory: true,
+      });
+
+      if (result) {
+        return {
+          score: result.score,
+          signals: result.signals.map(s => s.description),
+        };
+      }
+    } catch (error) {
+      console.warn('[DecisionEngine] Core fraud scoring unavailable:', error);
+    }
+
+    // Fallback to local scoring
+    return {
+      score: this.checkFraudSignals(claim),
+      signals: [],
+    };
   }
 
   private applyClaimTypeRules(claim: ClaimData): {
