@@ -264,6 +264,102 @@ class CoreClient {
     }
 
     /**
+     * P2: Get Like-Kind-Quality (LKQ) replacement pricing
+     * Uses market intelligence to find replacement items
+     */
+    async getLKQPricing(
+        assetId: string,
+        category: string,
+        brand: string | undefined,
+        condition: string,
+        originalValue: number
+    ): Promise<{
+        replacementOptions: Array<{
+            type: 'exact' | 'equivalent' | 'upgraded';
+            description: string;
+            estimatedPrice: number;
+            source: string;
+            confidence: number;
+        }>;
+        recommendedReplacement: number;
+        savings: number;
+        marketAvailability: 'high' | 'medium' | 'low';
+    } | null> {
+        try {
+            const response = await fetch(`${CORE_SERVICE_URL}/api/v1/market/query`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Source-App': 'proveniq-claimsiq',
+                },
+                body: JSON.stringify({
+                    category,
+                    brand,
+                    condition,
+                    timeframeDays: 90,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const marketPrice = data.marketPrice || {};
+                
+                const options = [
+                    {
+                        type: 'exact' as const,
+                        description: `Same ${brand || category} - ${condition} condition`,
+                        estimatedPrice: marketPrice.median || originalValue,
+                        source: 'Market comparables',
+                        confidence: data.trendConfidence || 70,
+                    },
+                    {
+                        type: 'equivalent' as const,
+                        description: `Similar ${category} - comparable specs`,
+                        estimatedPrice: Math.round((marketPrice.median || originalValue) * 0.85),
+                        source: 'Market analysis',
+                        confidence: (data.trendConfidence || 70) - 10,
+                    },
+                    {
+                        type: 'upgraded' as const,
+                        description: `Newer ${category} model - better condition`,
+                        estimatedPrice: Math.round((marketPrice.high || originalValue) * 1.1),
+                        source: 'Market premium',
+                        confidence: (data.trendConfidence || 70) - 15,
+                    },
+                ];
+
+                const recommended = options[0].estimatedPrice;
+                const savings = originalValue - recommended;
+
+                console.log(`[Core] LKQ pricing: ${options.length} options, recommended $${recommended}`);
+
+                return {
+                    replacementOptions: options,
+                    recommendedReplacement: recommended,
+                    savings: Math.max(0, savings),
+                    marketAvailability: data.demand?.level || 'medium',
+                };
+            }
+        } catch (error) {
+            console.error('[Core] LKQ pricing error:', error);
+        }
+
+        // Fallback
+        return {
+            replacementOptions: [{
+                type: 'equivalent',
+                description: `Comparable ${category}`,
+                estimatedPrice: Math.round(originalValue * 0.9),
+                source: 'Estimate',
+                confidence: 50,
+            }],
+            recommendedReplacement: Math.round(originalValue * 0.9),
+            savings: Math.round(originalValue * 0.1),
+            marketAvailability: 'medium',
+        };
+    }
+
+    /**
      * Compare Core valuation vs claimed value (dispute resolution)
      */
     async getValuationDispute(
