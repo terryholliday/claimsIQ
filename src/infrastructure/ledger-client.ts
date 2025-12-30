@@ -54,6 +54,14 @@ export class LedgerClient {
         payload: Record<string, unknown>,
         correlationId?: string
     ): Promise<LedgerWriteResult> {
+        if (process.env.NODE_ENV === 'production') {
+            if (!process.env.LEDGER_API_KEY) {
+                throw new Error('LEDGER_API_KEY is required in production');
+            }
+            if (!this.baseUrl.startsWith('https://')) {
+                throw new Error('LEDGER_API_URL must use https in production');
+            }
+        }
         const eventId = `evt_${randomUUID().substring(0, 12)}`;
         const corrId = correlationId || `corr_${randomUUID().substring(0, 8)}`;
         const apiKey = process.env.LEDGER_API_KEY || 'default-execution-key';
