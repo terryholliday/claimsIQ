@@ -27,6 +27,11 @@ export class SalvageController {
 
         console.log(`[SALVAGE API] Initiating salvage for claim ${claimId}`);
 
+        if (!req.serviceAuth?.walletId) {
+            res.status(401).json({ error: 'Service authentication required' });
+            return;
+        }
+
         // 1. Verify claim exists and is settled with PAY decision
         const claimRecord = this.auditService.getRecord(claimId);
         if (!claimRecord.success) {
@@ -60,7 +65,7 @@ export class SalvageController {
         }));
 
         // 4. Create manifest
-        const insurerWalletId = req.headers['x-insurer-wallet-id'] as string || 'wallet_insurer_default';
+        const insurerWalletId = req.serviceAuth.walletId;
         const result = await this.salvageService.createManifest(
             claimId,
             insurerWalletId,
@@ -98,6 +103,11 @@ export class SalvageController {
         const request = req.body as ListOnBidsRequest;
 
         console.log(`[SALVAGE API] Listing manifest ${manifestId} on Bids`);
+
+        if (!req.serviceAuth?.walletId) {
+            res.status(401).json({ error: 'Service authentication required' });
+            return;
+        }
 
         // 1. Validate request
         if (!request.auctionType || !request.duration || !request.reservePrice) {

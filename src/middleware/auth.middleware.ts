@@ -66,9 +66,14 @@ async function validateToken(token: string): Promise<{ valid: boolean; serviceNa
     if (firebaseAuth) {
         try {
             const decoded = await firebaseAuth.verifyIdToken(token);
+            const serviceName = decoded.service_id || decoded.serviceName || decoded.aud;
+            const isServiceToken = decoded.service === true || Boolean(decoded.service_id || decoded.serviceName);
+            if (!serviceName || !isServiceToken) {
+                return { valid: false };
+            }
             return {
                 valid: true,
-                serviceName: decoded.aud || 'proveniq-claimsiq',
+                serviceName,
                 walletId: decoded.uid,
                 claims: decoded,
             };
@@ -89,11 +94,6 @@ async function validateToken(token: string): Promise<{ valid: boolean; serviceNa
         };
     }
 
-    // Allow any token in non-production as last resort
-    if (process.env.NODE_ENV !== 'production') {
-        return { valid: true, serviceName: 'proveniq-claimsiq' };
-    }
-
     return { valid: false };
 }
 
@@ -104,15 +104,6 @@ export function serviceAuthMiddleware(req: Request, res: Response, next: NextFun
     // 1. Extract Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        // Allow unauthenticated in dev
-        if (process.env.NODE_ENV !== 'production') {
-            req.serviceAuth = {
-                serviceName: 'anonymous',
-                correlationId: (req.headers['x-correlation-id'] as string) || `corr_${Date.now()}`,
-                permissions: ['read:provenance', 'write:claims'],
-            };
-            return next();
-        }
         res.status(401).json({ error: 'Missing Authorization header' });
         return;
     }
@@ -127,7 +118,12 @@ export function serviceAuthMiddleware(req: Request, res: Response, next: NextFun
         }
 
         // 3. Extract X-Service-Name header
-        const serviceName = (req.headers['x-service-name'] as string) || jwtResult.serviceName || 'unknown';
+        const headerServiceName = req.headers['x-service-name'] as string | undefined;
+        const serviceName = jwtResult.serviceName || 'unknown';
+        if (headerServiceName && headerServiceName !== serviceName) {
+            res.status(403).json({ error: 'Service header mismatch' });
+            return;
+        }
         
         if (!ALLOWED_SERVICES.includes(serviceName)) {
             res.status(403).json({ error: `Unknown service: ${serviceName}` });

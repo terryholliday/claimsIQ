@@ -10,7 +10,7 @@ import { AttributionController } from './attribution.controller';
 import { SalvageController } from '../modules/salvage/salvage.controller';
 import { ProvenanceController } from '../modules/provenance/provenance.controller';
 import { ClaimsEventsController } from '../modules/claims/claims-events.controller';
-import { serviceAuthMiddleware } from '../middleware/auth.middleware';
+import { requirePermission, serviceAuthMiddleware } from '../middleware/auth.middleware';
 import { initializeDatabase } from '../infrastructure/database';
 import { getClaimsRepository } from '../infrastructure/claims-repository';
 
@@ -35,18 +35,18 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // 2. Claims Endpoints (DNA Contract: /v1/claimsiq/...)
-app.post('/v1/claimsiq/claims', claimsController.submitClaim);
-app.get('/v1/claimsiq/claims/:claimId/status', claimsController.getClaimStatus);
-app.post('/v1/claimsiq/claims/:claimId/events', claimsEventsController.recordEvent);
+app.post('/v1/claimsiq/claims', requirePermission('write:claims'), claimsController.submitClaim);
+app.get('/v1/claimsiq/claims/:claimId/status', requirePermission('read:claims'), claimsController.getClaimStatus);
+app.post('/v1/claimsiq/claims/:claimId/events', requirePermission('write:events'), claimsEventsController.recordEvent);
 
 // 3. Pre-Loss Provenance Endpoint (DNA Contract requirement)
-app.get('/v1/claimsiq/items/:itemId/preloss-provenance', provenanceController.getPreLossProvenance);
+app.get('/v1/claimsiq/items/:itemId/preloss-provenance', requirePermission('read:provenance'), provenanceController.getPreLossProvenance);
 
 // 4. Salvage Endpoints (ClaimsIQ → Bids Integration)
-app.post('/v1/claimsiq/claims/:claimId/salvage', salvageController.initiateSalvage);
-app.get('/v1/claimsiq/claims/:claimId/salvage', salvageController.getClaimSalvage);
-app.post('/v1/claimsiq/salvage/:manifestId/list-on-bids', salvageController.listOnBids);
-app.get('/v1/claimsiq/salvage/:manifestId', salvageController.getManifest);
+app.post('/v1/claimsiq/claims/:claimId/salvage', requirePermission('write:salvage'), salvageController.initiateSalvage);
+app.get('/v1/claimsiq/claims/:claimId/salvage', requirePermission('read:salvage'), salvageController.getClaimSalvage);
+app.post('/v1/claimsiq/salvage/:manifestId/list-on-bids', requirePermission('write:salvage'), salvageController.listOnBids);
+app.get('/v1/claimsiq/salvage/:manifestId', requirePermission('read:salvage'), salvageController.getManifest);
 
 // 5. Shrinkage ingest from OPS (with persistence)
 app.post('/v1/claimsiq/claims/shrinkage', async (req: Request, res: Response) => {
@@ -141,8 +141,8 @@ app.post('/v1/claimsiq/claims/deposit', async (req: Request, res: Response) => {
 });
 
 // Legacy routes (backward compatibility - deprecate in v2)
-app.post('/api/v1/claims', claimsController.submitClaim);
-app.get('/api/v1/claims/:id', claimsController.getClaimStatus);
+app.post('/api/v1/claims', requirePermission('write:claims'), claimsController.submitClaim);
+app.get('/api/v1/claims/:id', requirePermission('read:claims'), claimsController.getClaimStatus);
 
 // Start Server
 if (require.main === module) {

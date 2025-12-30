@@ -32,6 +32,19 @@ interface ClaimEventRequest {
 
 // Idempotency store (production: Redis/database)
 const processedEvents = new Map<string, { eventId: string; timestamp: string }>();
+const ALLOWED_EVENT_TYPES: ClaimEventType[] = [
+    'INTAKE',
+    'VERIFICATION_STARTED',
+    'VERIFICATION_COMPLETE',
+    'DECISION_PENDING',
+    'DECISION_MADE',
+    'PAYMENT_INITIATED',
+    'PAYMENT_COMPLETE',
+    'SALVAGE_INITIATED',
+    'CLOSED',
+    'REOPENED',
+    'FRAUD_FLAGGED',
+];
 
 export class ClaimsEventsController {
     /**
@@ -43,6 +56,19 @@ export class ClaimsEventsController {
         const { eventType, payload, idempotencyKey } = req.body as ClaimEventRequest;
         const correlationId = getCorrelationId(req);
 
+        if (!req.serviceAuth?.walletId) {
+            res.status(401).json({
+                error: {
+                    code: 'NOT_AUTHENTICATED',
+                    message: 'Service authentication required',
+                    details: {}
+                },
+                correlationId,
+                timestamp: new Date().toISOString()
+            });
+            return;
+        }
+
         console.log(`[CLAIMS EVENTS] Recording ${eventType} for claim ${claimId}`);
 
         // Validate required fields
@@ -51,7 +77,19 @@ export class ClaimsEventsController {
                 error: {
                     code: 'MISSING_EVENT_TYPE',
                     message: 'eventType is required',
-                    details: { validTypes: ['INTAKE', 'VERIFICATION_STARTED', 'VERIFICATION_COMPLETE', 'DECISION_PENDING', 'DECISION_MADE', 'PAYMENT_INITIATED', 'PAYMENT_COMPLETE', 'SALVAGE_INITIATED', 'CLOSED', 'REOPENED', 'FRAUD_FLAGGED'] }
+                    details: { validTypes: ALLOWED_EVENT_TYPES }
+                },
+                correlationId,
+                timestamp: new Date().toISOString()
+            });
+            return;
+        }
+        if (!ALLOWED_EVENT_TYPES.includes(eventType)) {
+            res.status(400).json({
+                error: {
+                    code: 'INVALID_EVENT_TYPE',
+                    message: 'eventType is not allowed',
+                    details: { validTypes: ALLOWED_EVENT_TYPES }
                 },
                 correlationId,
                 timestamp: new Date().toISOString()
@@ -83,7 +121,7 @@ export class ClaimsEventsController {
             // Write to Ledger
             const ledgerResult = await ledgerClient.writeEvent(
                 'claim.created', // Using claim.created as generic claim event
-                req.serviceAuth?.walletId || 'system',
+                req.serviceAuth.walletId,
                 claimId,
                 {
                     claimEventType: eventType,
