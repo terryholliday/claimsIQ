@@ -9,4 +9,9 @@ export const LEGAL_DOCS_VERSION = "2025-12-29";
 // In production, these would be fetched from proveniq-main API or shared package
 // For now, duplicating to maintain repo independence
 
-export { PRIVACY_POLICY_MD, TERMS_OF_SERVICE_MD, EULA_MD } from '../../../proveniq-main/src/lib/legal-documents';
+// export { PRIVACY_POLICY_MD, TERMS_OF_SERVICE_MD, EULA_MD } from '../../../proveniq-main/src/lib/legal-documents';
+
+export const PRIVACY_POLICY_MD = "# Privacy Policy\n\n(Placeholder for PROVENIQ Privacy Policy)";
+export const TERMS_OF_SERVICE_MD = "# Terms of Service\n\n(Placeholder for PROVENIQ TOS)";
+export const EULA_MD = "# EULA\n\n(Placeholder for PROVENIQ EULA)";
+

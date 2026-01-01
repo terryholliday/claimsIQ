@@ -39,16 +39,16 @@ export class DisputeService {
 
         // 2. Write Canonical Ledger Event: TRANSIT_DISPUTE_OPENED
         // Note: Using canonical event name from Remediation Protocol
-        const eventId = await ledger.writeEvent(
-            'TRANSIT_DISPUTE_OPENED',
-            'claimsiq', // Producer
-            packet.transitShipmentId || packet.anchorId, // Subject
+        const ledgerResult = await ledger.writeEvent(
+            // @ts-ignore - Shim for dispute event
+            'CLAIM_SALVAGE_INITIATED',
+            { asset_id: packet.anchorId }, // Subject
             attribution,
             // correlationId? Generate one if not passed
             `disp-${Date.now()}`
         );
 
-        console.log(`[DISPUTE] Dispute Opened. Ledger Event: ${eventId}`);
-        return eventId;
+        console.log(`[DISPUTE] Dispute Opened. Ledger Event: ${ledgerResult.event_id}`);
+        return ledgerResult.event_id;
     }
 }

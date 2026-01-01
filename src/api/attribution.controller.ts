@@ -15,14 +15,14 @@ export interface AttributionPacket {
     packetId: string;
     claimId: string;
     generatedAt: string;
-    
+
     // Claimant info
     claimant: {
         id: string;
         name: string;
         policyNumber: string;
     };
-    
+
     // Asset info
     asset: {
         id: string;
@@ -36,7 +36,7 @@ export interface AttributionPacket {
         };
         anchorId?: string;
     };
-    
+
     // Pre-loss provenance
     preLossProvenance: {
         hasPreLossEvidence: boolean;
@@ -45,7 +45,7 @@ export interface AttributionPacket {
         ledgerEventIds: string[];
         summary: string;
     };
-    
+
     // Fraud analysis
     fraudAnalysis: {
         score: number;
@@ -53,7 +53,7 @@ export interface AttributionPacket {
         signals: Array<{ type: string; severity: number; description: string }>;
         recommendation: string;
     };
-    
+
     // Ledger trail
     ledgerTrail: {
         eventCount: number;
@@ -65,7 +65,7 @@ export interface AttributionPacket {
         }>;
         chainIntegrity: 'verified' | 'unverified' | 'broken';
     };
-    
+
     // Summary for adjuster
     adjusterSummary: {
         confidenceScore: number;
@@ -76,7 +76,7 @@ export interface AttributionPacket {
 }
 
 export class AttributionController {
-    
+
     /**
      * Generate attribution packet for a claim
      * GET /v1/claimsiq/claims/:claimId/attribution-packet
@@ -84,16 +84,16 @@ export class AttributionController {
     generatePacket = async (req: Request, res: Response) => {
         const { claimId } = req.params;
         const correlationId = (req.headers['x-correlation-id'] as string) || randomUUID();
-        
+
         console.log(`[ATTRIBUTION] Generating packet for claim ${claimId}`);
-        
+
         try {
             // In production, fetch claim from database
             // For now, build packet from available services
-            
+
             const coreClient = getCoreClient();
             const ledgerClient = getLedgerClient();
-            
+
             // Mock claim data (would come from DB)
             const claimData = {
                 id: claimId,
@@ -105,7 +105,7 @@ export class AttributionController {
                 assetCategory: 'Electronics',
                 claimedValue: 150000, // $1500.00 in cents
             };
-            
+
             // Get fraud score from Core
             const fraudScore = await coreClient.getFraudScore({
                 entityType: 'claim',
@@ -116,29 +116,29 @@ export class AttributionController {
                 eventType: 'CLAIM_SUBMITTED',
                 evidenceCount: 3,
             });
-            
+
             // Get valuation from Core
             const valuation = await coreClient.getValuation(
                 claimData.assetId,
                 claimData.assetCategory,
                 'good'
             );
-            
+
             // Check for asset in registry
             const registeredAsset = await coreClient.getAsset(claimData.assetId);
-            
+
             // Build attribution packet
             const packet: AttributionPacket = {
                 packetId: `attr_${randomUUID().substring(0, 12)}`,
                 claimId,
                 generatedAt: new Date().toISOString(),
-                
+
                 claimant: {
                     id: claimData.claimantId,
                     name: claimData.claimantName,
                     policyNumber: claimData.policyNumber,
                 },
-                
+
                 asset: {
                     id: claimData.assetId,
                     name: claimData.assetName,
@@ -151,17 +151,17 @@ export class AttributionController {
                     } : undefined,
                     anchorId: registeredAsset?.anchorId,
                 },
-                
+
                 preLossProvenance: {
                     hasPreLossEvidence: !!registeredAsset,
                     evidenceCount: registeredAsset ? 5 : 0,
                     earliestTimestamp: registeredAsset ? '2024-01-15T10:30:00Z' : undefined,
                     ledgerEventIds: [],
-                    summary: registeredAsset 
+                    summary: registeredAsset
                         ? 'Asset registered in PROVENIQ ecosystem with pre-loss documentation'
                         : 'No pre-loss evidence found in PROVENIQ ecosystem',
                 },
-                
+
                 fraudAnalysis: fraudScore ? {
                     score: fraudScore.score,
                     riskLevel: fraudScore.riskLevel,
@@ -177,13 +177,13 @@ export class AttributionController {
                     signals: [],
                     recommendation: 'review',
                 },
-                
+
                 ledgerTrail: {
                     eventCount: 0,
                     events: [],
                     chainIntegrity: 'unverified',
                 },
-                
+
                 adjusterSummary: {
                     confidenceScore: this.calculateConfidence(fraudScore, registeredAsset, valuation),
                     autoApprovalEligible: (fraudScore?.score || 50) < 30 && !!registeredAsset,
@@ -191,13 +191,12 @@ export class AttributionController {
                     recommendedAction: this.determineAction(fraudScore, registeredAsset),
                 },
             };
-            
+
             // Log packet generation to Ledger
             try {
                 await ledgerClient.writeEvent(
-                    'claim.created',
-                    claimData.claimantId,
-                    claimData.assetId,
+                    'CLAIM_INTAKE_RECEIVED', // Mapped from claim.created
+                    { asset_id: claimData.assetId, claim_id: claimId }, // Correct Subject object
                     {
                         packetId: packet.packetId,
                         claimId,
@@ -209,34 +208,34 @@ export class AttributionController {
             } catch (ledgerErr) {
                 console.warn('[ATTRIBUTION] Ledger write failed:', ledgerErr);
             }
-            
+
             return res.status(200).json(packet);
-            
+
         } catch (error: any) {
             console.error('[ATTRIBUTION] Packet generation failed:', error);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 error: 'Failed to generate attribution packet',
                 details: error.message,
             });
         }
     };
-    
+
     private calculateConfidence(
-        fraudScore: any, 
-        registeredAsset: any, 
+        fraudScore: any,
+        registeredAsset: any,
         valuation: any
     ): number {
         let confidence = 50; // Base
-        
+
         if (registeredAsset) confidence += 20; // Pre-loss evidence
         if (registeredAsset?.anchorId) confidence += 15; // Anchor verified
         if (valuation?.confidenceLevel === 'high') confidence += 10;
         if (fraudScore?.score < 30) confidence += 5;
         if (fraudScore?.score > 60) confidence -= 20;
-        
+
         return Math.min(100, Math.max(0, confidence));
     }
-    
+
     private generateFlags(
         fraudScore: any,
         registeredAsset: any,
@@ -244,7 +243,7 @@ export class AttributionController {
         claimData: any
     ): string[] {
         const flags: string[] = [];
-        
+
         if (!registeredAsset) flags.push('NO_PRE_LOSS_EVIDENCE');
         if (fraudScore?.score > 60) flags.push('HIGH_FRAUD_RISK');
         if (fraudScore?.score > 80) flags.push('CRITICAL_FRAUD_RISK');
@@ -257,10 +256,10 @@ export class AttributionController {
         if (valuation?.biasFlags?.length > 0) {
             flags.push(...valuation.biasFlags);
         }
-        
+
         return flags;
     }
-    
+
     private determineAction(
         fraudScore: any,
         registeredAsset: any

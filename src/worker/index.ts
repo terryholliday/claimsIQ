@@ -1,9 +1,7 @@
 
 import { startWorker } from './ledgerListener';
-import * as dotenv from 'dotenv';
 
-// Load env vars
-dotenv.config();
+// dotenv import removed for cloud build
 
 console.log('='.repeat(50));
 console.log(' PROVENIQ CLAIMSIQ - ADJUDICATION WORKER');

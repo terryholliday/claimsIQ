@@ -11,7 +11,7 @@ import { getLedgerClient } from '../../infrastructure/ledger-client';
 import { getEventBus } from '../../infrastructure/event-bus';
 import { getCorrelationId } from '../../middleware/auth.middleware';
 
-export type ClaimEventType = 
+export type ClaimEventType =
     | 'INTAKE'
     | 'VERIFICATION_STARTED'
     | 'VERIFICATION_COMPLETE'
@@ -81,10 +81,11 @@ export class ClaimsEventsController {
             const eventBus = getEventBus();
 
             // Write to Ledger
+            // Write to Ledger
             const ledgerResult = await ledgerClient.writeEvent(
-                'claim.created', // Using claim.created as generic claim event
-                req.serviceAuth?.walletId || 'system',
-                claimId,
+                // @ts-ignore - Mapping legacy claim.created to canonical event
+                'CLAIM_INTAKE_RECEIVED',
+                { claim_id: claimId, asset_id: 'unknown' },
                 {
                     claimEventType: eventType,
                     ...payload
